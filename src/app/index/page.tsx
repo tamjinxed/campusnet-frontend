@@ -65,7 +65,6 @@ const IndexPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-blue-50 py-20">
         <div className="container mx-auto px-6">
@@ -82,7 +81,7 @@ const IndexPage = () => {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/signup">
+                <Link href="/signup" legacyBehavior>
                   <Button className="bg-campus-gradient hover:opacity-90 text-white px-8 py-6 text-lg rounded-xl">
                     Get Started
                   </Button>
@@ -117,7 +116,6 @@ const IndexPage = () => {
           </div>
         </div>
       </section>
-
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
@@ -149,7 +147,6 @@ const IndexPage = () => {
           </div>
         </div>
       </section>
-
       {/* Upcoming Events Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
@@ -158,7 +155,7 @@ const IndexPage = () => {
               <h2 className="text-4xl font-bold mb-4">Upcoming Events</h2>
               <p className="text-xl text-gray-600">Don't miss out on exciting campus activities</p>
             </div>
-            <Link href="/events">
+            <Link href="/events" legacyBehavior>
               <Button className="bg-campus-gradient hover:opacity-90 text-white">
                 View All Events
               </Button>
@@ -195,7 +192,6 @@ const IndexPage = () => {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="py-20 bg-campus-gradient">
         <div className="container mx-auto px-6 text-center">
@@ -207,7 +203,7 @@ const IndexPage = () => {
               Get verified with your education email and start connecting with thousands of students across universities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup">
+              <Link href="/signup" legacyBehavior>
                 <Button className="bg-white text-campus-purple hover:bg-gray-100 px-8 py-6 text-lg rounded-xl font-semibold">
                   Sign Up Now
                 </Button>
@@ -219,7 +215,6 @@ const IndexPage = () => {
           </div>
         </div>
       </section>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-6">

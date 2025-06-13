@@ -1,47 +1,78 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    /* ... keep all your existing custom properties ... */
-  }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    /* ... keep all your existing dark mode properties ... */
-  }
+/* ===== Design System ===== */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  /* ... keep all other root variables ... */
+}
 
-  * {
-    @apply border-border;
-  }
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  /* ... keep all dark mode variables ... */
+}
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+/* ===== Base Styles ===== */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* ===== Utilities ===== */
+.campus-gradient {
+  background: linear-gradient(135deg, hsl(255 84% 65%) 0%, hsl(237 100% 70%) 100%);
+}
+
+.campus-gradient-text {
+  background: linear-gradient(135deg, hsl(255 84% 65%) 0%, hsl(237 100% 70%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Vite Migration Styles ===== */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spin-logo {
+    animation: logo-spin infinite 20s linear;
   }
 }
 
-@layer utilities {
-  .campus-gradient {
-    @apply bg-gradient-to-r from-[hsl(255_84%_65%)] to-[hsl(237_100%_70%)];
-  }
-  
-  .campus-gradient-text {
-    @apply bg-gradient-to-r from-[hsl(255_84%_65%)] to-[hsl(237_100%_70%)] bg-clip-text text-transparent;
-  }
-}
-
-/* Remove or namespace these legacy styles if not needed */
 .card {
-  @apply p-8; /* Convert to Tailwind */
+  padding: 2em;
 }
 
 .read-the-docs {
-  @apply text-gray-400; /* Convert to Tailwind */
+  color: hsl(var(--muted-foreground));
 }
-

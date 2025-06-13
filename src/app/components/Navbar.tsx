@@ -25,7 +25,7 @@ const Navbar = () => {
               href={item.href}
               className="text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium"
               aria-label={`Navigate to ${item.label}`}
-            >
+              legacyBehavior>
               {item.label}
             </Link>
           ))}
