@@ -81,7 +81,7 @@ const IndexPage = () => {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/signup" legacyBehavior>
+                <Link href="/signup" >
                   <Button className="bg-campus-gradient hover:opacity-90 text-white px-8 py-6 text-lg rounded-xl">
                     Get Started
                   </Button>
@@ -155,7 +155,7 @@ const IndexPage = () => {
               <h2 className="text-4xl font-bold mb-4">Upcoming Events</h2>
               <p className="text-xl text-gray-600">Don't miss out on exciting campus activities</p>
             </div>
-            <Link href="/events" legacyBehavior>
+            <Link href="/events" >
               <Button className="bg-campus-gradient hover:opacity-90 text-white">
                 View All Events
               </Button>
@@ -203,7 +203,7 @@ const IndexPage = () => {
               Get verified with your education email and start connecting with thousands of students across universities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup" legacyBehavior>
+              <Link href="/signup" >
                 <Button className="bg-white text-campus-purple hover:bg-gray-100 px-8 py-6 text-lg rounded-xl font-semibold">
                   Sign Up Now
                 </Button>
