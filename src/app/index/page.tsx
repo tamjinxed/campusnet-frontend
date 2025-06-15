@@ -77,18 +77,15 @@ const IndexPage = () => {
                   Today!
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                  Connect with fellow students, discover exciting events, and build meaningful relationships within your university ecosystem.
+                  Connect with fellow students, share experiences, and stay updated on campus events. Sign up now to create your unique university network!
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/signup" >
                   <Button className="bg-campus-gradient hover:opacity-90 text-white px-8 py-6 text-lg rounded-xl">
-                    Get Started
+                    Sign Up
                   </Button>
                 </Link>
-                <Button variant="outline" className="border-2 border-gray-300 px-8 py-6 text-lg rounded-xl hover:bg-gray-50">
-                  Learn More
-                </Button>
               </div>
             </div>
             
@@ -193,6 +190,7 @@ const IndexPage = () => {
         </div>
       </section>
       {/* CTA Section */}
+      {/*
       <section className="py-20 bg-campus-gradient">
         <div className="container mx-auto px-6 text-center">
           <div className="max-w-4xl mx-auto text-white">
@@ -214,47 +212,61 @@ const IndexPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-2xl font-bold campus-gradient-text mb-4">CampusNet</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Connecting university communities and empowering student engagement across campuses.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Features</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/communities">Communities</Link></li>
-                <li><Link href="/events">Events</Link></li>
-                <li><Link href="/groups">Groups</Link></li>
-                <li><Link href="/messaging">Messaging</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about">About</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-                <li><Link href="/privacy">Privacy</Link></li>
-                <li><Link href="/terms">Terms</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Get in Touch</h4>
-              <p className="text-gray-400">
-                Have questions? We'd love to hear from you.
-              </p>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 CampusNet. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <footer className="bg-campus-gradienty text-white py-20">
+  <div className="container mx-auto px-6">
+    <div className="grid md:grid-cols-4 gap-16">
+      {/* Column 1: Logo + Contact Info */}
+      <div className="space-y-6">
+        <h3 className="text-2xl font-extrabold campus-gradient-texty">CampusNet</h3>
+        <ul className="space-y-4 text-sm font-semibold text-gray-100 leading-relaxed">
+          <li className="flex items-center gap-2">
+            <span>📧</span> support.campusnet@gmail.com
+          </li>
+          <li className="flex items-center gap-2">
+            <span>📞</span> +880123-4567891
+          </li>
+          <li className="flex items-center gap-2">
+            <span>📍</span> ABC Road, Dhaka, Bangladesh
+          </li>
+        </ul>
+      </div>
+
+      {/* Column 2: Navigation Links */}
+      <div className="space-y-4">
+        <ul className="space-y-4 text-sm font-semibold text-gray-100 leading-loose">
+          <li><Link href="/">Home</Link></li>
+          <li><Link href="/about">About Us</Link></li>
+          <li><Link href="/communities">Communities</Link></li>
+          <li><Link href="/groups">Groups</Link></li>
+          <li><Link href="/events">Events</Link></li>
+        </ul>
+      </div>
+
+      {/* Column 3: Legal */}
+      <div className="space-y-4">
+        <ul className="space-y-4 text-sm font-semibold text-gray-100 leading-loose">
+          <li><Link href="/terms">Terms of Use</Link></li>
+          <li><Link href="/privacy">Privacy Policy</Link></li>
+        </ul>
+      </div>
+
+      {/* Column 4: Social Icons */}
+      <div className="flex gap-6 items-start pt-2 text-xl">
+        <Link href="#"><img src="/img/fb.png" alt="" className='h-32px w-32pxw-[32px] h-[32px] top-[4753px] left-[1291px]'/></Link>
+        <Link href="#"><img src="/img/ig.png" alt=""className='h-32px w-32pxw-[32px] h-[32px] top-[4753px] left-[1291px]' /></Link>
+        <Link href="#"><img src="/img/x.png" alt=""className='h-32px w-32pxw-[32px] h-[32px] top-[4753px] left-[1291px]' /></Link>
+      </div>
+    </div>
+
+    {/* Bottom */}
+    <div className="border-t border-gray-800 mt-20 pt-8 text-center text-gray-200 text-sm font-semibold">
+      <p>&copy; Copyright 2024. All Rights Reserved by CampusNet</p>
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 };

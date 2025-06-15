@@ -7,7 +7,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-8">
         <Link 
           href="/" 
-          className="text-2xl font-bold campus-gradient-text hover:opacity-90 transition-opacity"
+          className="text-2xl text-gray-900 font-bold campus-gradient-texty hover:opacity-90 transition-opacity"
           aria-label="CampusNet Home"
         >
           CampusNet
@@ -23,7 +23,7 @@ const Navbar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium"
+              className="font-dm-sans font-bold text-xl pl-5 pr-6 py-2.5 mx-3 tracking-normal text-gray-900 hover:text-gray-700 transition-colors rounded-md font-medium"
               aria-label={`Navigate to ${item.label}`}
               >
               {item.label}
@@ -32,21 +32,12 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex items-center space-x-4">
-        <Link href="/login"  >
+        <Link href="/login"    >
           <Button 
-            variant="ghost" 
-            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            className="bg-campus-gradient hover:opacity-90 text-white px-6"
             aria-label="Login"
           >
             Login
-          </Button>
-        </Link>
-        <Link href="/signup"  >
-          <Button 
-            className="bg-campus-gradient hover:opacity-90 text-white px-6"
-            aria-label="Sign Up"
-          >
-            Sign Up
           </Button>
         </Link>
       </div>

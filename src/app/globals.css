@@ -98,17 +98,39 @@ body {
 }
 
 /* ===== Utilities ===== */
+.bg-campus-gradient {
+  background: linear-gradient(135deg, hsl(255, 84%, 65%) 0%, hsl(237, 100%, 70%) 100%) !important;
+}
+.bg-campus-gradienty {
+  background: var(--Violet-Blue,  #5928E4) !important;
+}
 .campus-gradient {
   background: linear-gradient(135deg, hsl(255 84% 65%) 0%, hsl(237 100% 70%) 100%);
 }
 
+.campus-gradient-texty {
+ font-family: Jaro;
+font-weight: 400;
+font-size: 36px;
+line-height: 100%;
+letter-spacing: 0%;
+}
+.campus-gradient-texty {
+ font-family: Jaro;
+font-weight: 400;
+font-size: 36px;
+line-height: 100%;
+letter-spacing: 0%;
+}
 .campus-gradient-text {
   background: linear-gradient(135deg, hsl(255 84% 65%) 0%, hsl(237 100% 70%) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
+.bg-campus-gradient {
+  background: linear-gradient(135deg, hsl(255 84% 65%) 0%, hsl(237 100% 70%) 100%);
+}
 /* ===== Vite Migration Styles ===== */
 .container {
   max-width: 1280px;
@@ -141,6 +163,20 @@ body {
     animation: logo-spin infinite 20s linear;
   }
 }
+
+@layer utilities {
+  .campus-gradient {
+    background: var(--campus-gradient);
+  }
+  
+  .campus-gradient-text {
+  background: var(--campus-gradient, #101828); /* Gray 900 fallback */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+}
+
 
 .card {
   padding: 2em;

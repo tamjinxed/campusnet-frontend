@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
+import { Jaro } from 'next/font/google';
 
+const jaro = Jaro({
+  subsets: ['latin'],
+  variable: '--font-jaro',
+});
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
