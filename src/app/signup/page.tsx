@@ -37,17 +37,94 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+   <div className="min-h-screen bg-gray-50">
       <Navbar />
+      
+      <div className="flex min-h-[calc(100vh-80px)]">
+        {/* Left Side - Animation Section */}
+        <div className="hidden lg:flex lg:w-1/2 bg-campus-gradient relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
+          
+          {/* Dynamic Grid Animation */}
+          <div className="absolute inset-0">
+            <div className="grid grid-cols-8 grid-rows-8 h-full w-full gap-4 p-8 opacity-30">
+              {Array.from({ length: 64 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white/20 rounded-lg animate-pulse-gentle"
+                  style={{ 
+                    animationDelay: `${(i * 0.1) % 3}s`,
+                    animationDuration: `${2 + (i % 3)}s`
+                  }}
+                ></div>
+              ))}
+            </div>
+          </div>
 
-      <div className="min-h-screen flex flex-col lg:flex-row bg-white">
-        {/* Left Side Image */}
-        <div className="hidden lg:block lg:w-2/5 xl:w-1/2">
-          <img
-            src="/img/login.jpg"
-            alt="Students"
-            className="h-full max-w-[80%]  object-cover"
-          />
+          {/* Floating Network Nodes */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative">
+              {/* Central Hub */}
+              <div className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center animate-float">
+                <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-sm"></div>
+              </div>
+              
+              {/* Connected Nodes */}
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="absolute w-20 h-20 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 animate-float"
+                  style={{
+                    top: `${50 + 40 * Math.cos(i * Math.PI / 3)}%`,
+                    left: `${50 + 40 * Math.sin(i * Math.PI / 3)}%`,
+                    transform: 'translate(-50%, -50%)',
+                    animationDelay: `${i * 0.5}s`
+                  }}
+                >
+                  <div className="w-full h-full rounded-full bg-white/20 animate-pulse-gentle"></div>
+                </div>
+              ))}
+              
+              {/* Connection Lines */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <line
+                    key={i}
+                    x1="50%"
+                    y1="50%"
+                    x2={`${50 + 40 * Math.sin(i * Math.PI / 3)}%`}
+                    y2={`${50 + 40 * Math.cos(i * Math.PI / 3)}%`}
+                    stroke="rgba(255,255,255,0.3)"
+                    strokeWidth="2"
+                    className="animate-pulse-gentle"
+                    style={{ animationDelay: `${i * 0.3}s` }}
+                  />
+                ))}
+              </svg>
+            </div>
+          </div>
+
+          {/* Text Content */}
+          <div className="absolute bottom-20 left-20 right-20 text-white z-10">
+            <h1 className="text-5xl font-bold mb-6 animate-fade-in">Join CampusNet</h1>
+            <p className="text-xl opacity-90 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              Create your account and become part of a vibrant campus community. Network, collaborate, and grow together.
+            </p>
+            <div className="flex space-x-8 mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <div className="text-center">
+                <div className="text-3xl font-bold">10K+</div>
+                <div className="text-sm opacity-80">Students</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">500+</div>
+                <div className="text-sm opacity-80">Communities</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">1K+</div>
+                <div className="text-sm opacity-80">Events</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right Side Form */}
