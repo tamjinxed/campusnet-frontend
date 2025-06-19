@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { Jaro } from 'next/font/google';
 
+// Auth and other providers
+import { AuthProvider } from "@/app/context/AuthContext";
+
 const jaro = Jaro({
   subsets: ['latin'],
   variable: '--font-jaro',
@@ -32,7 +35,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

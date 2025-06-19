@@ -8,11 +8,17 @@ import { Label } from "@/app/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/app/components/ui/card";
 import Link from "next/link";
 
+// For Auth
+import { useAuth } from "../context/AuthContext";
+
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
+
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -21,9 +27,13 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login data:", formData);
+    try {
+      await login(formData);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
