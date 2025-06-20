@@ -9,6 +9,10 @@ interface FailedRequestQueueItem {
     onFailure: (error: AxiosError) => void;
 }
 
+// Security utility functions
+const generateRequestId = () => Math.random().toString(36).substring(2, 15);
+
+// State management for refresh logic
 let isRefreshing = false;
 let failedRequestQueue: FailedRequestQueueItem[] = [];
 
@@ -18,16 +22,26 @@ const api = axios.create({
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
     },
 });
 
-// Request Interceptor - This adds the access token to every request
+// Utility function to wait
+
+// Request Interceptor : adds the access token to every request
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const token = getAccessToken();
         if (token) {
             config.headers["Authorization"] = `Bearer ${token}`;
         }
+
+        // Add request ID for tracking
+        config.headers["X-Request-ID"] = generateRequestId();
+
+        // Add timestamp to prevent replay attacks
+        config.headers["X-Timestamp"] = Date.now().toString();
+
         return config;
     },
     (error) => {
@@ -35,66 +49,94 @@ api.interceptors.request.use(
     },
 );
 
-// Response interceptor - This handles token expiry and refresh logic
+// Response interceptor
 api.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
-        // Only handle 401 errors that are not from the refresh token endpoint itself
         const originalRequest = error.config as InternalAxiosRequestConfig & {
             _retry?: boolean;
+            _retryCount?: number;
         };
-        const refreshTokenEndpoint = originalRequest.url?.endsWith(
+
+        if (!originalRequest) {
+            return Promise.reject(error);
+        }
+
+        const isRefreshTokenEndpoint = originalRequest.url?.endsWith(
             "/auth/refresh-token",
         );
-        console.log(refreshTokenEndpoint);
+        const isLoginEndpoint = originalRequest.url?.endsWith("/auth/login");
 
+        // Handle 401 errors (unauthorized) - Token refresh logic
         if (
             error.response?.status === 401 &&
-            originalRequest._retry !== true &&
-            !refreshTokenEndpoint
+            !originalRequest._retry &&
+            !isRefreshTokenEndpoint &&
+            !isLoginEndpoint
         ) {
             if (!isRefreshing) {
                 isRefreshing = true;
                 originalRequest._retry = true;
 
                 try {
-                    // Refresh the token
-                    const { data } = await axios
-                        .create({
-                            baseURL: process.env.NEXT_PUBLIC_API_URL,
-                            withCredentials: true,
-                        })
-                        .post("/auth/refresh-token", {});
+                    console.log(
+                        "Access token expired or invalid. Attempting refresh...",
+                    );
 
+                    // Create a separate axios instance for refresh to avoid interceptor loops
+                    const refreshAxios = axios.create({
+                        baseURL: process.env.NEXT_PUBLIC_API_URL,
+                        withCredentials: true,
+                    });
+
+                    const { data } = await refreshAxios.post(
+                        "/auth/refresh-token",
+                        {},
+                    );
                     const { accessToken } = data.data;
 
+                    // Set the new token with expiry information
                     setAccessToken(accessToken);
 
-                    // Retry all failed request in the queue with this new token
+                    console.log("Token refreshed successfully");
+
+                    // Retry all failed requests in the queue with the new token
                     failedRequestQueue.forEach((request) =>
                         request.onSuccess(accessToken),
                     );
                     failedRequestQueue = [];
 
-                    // Retry the original request
+                    // Retry the original request with new token
                     if (originalRequest.headers) {
                         originalRequest.headers["Authorization"] =
                             `Bearer ${accessToken}`;
                     }
                     return api(originalRequest);
                 } catch (refreshError) {
-                    // If refresh fails, log out the user
+                    console.error("Token refresh failed:", refreshError);
+
+                    // Handle rate limiting on refresh endpoint
+                    if (refreshError.response?.status === 429) {
+                        console.log(
+                            "Refresh endpoint rate limited. User will need to login again.",
+                        );
+                    }
+
+                    // Notify all queued requests of failure
                     failedRequestQueue.forEach((request) =>
                         request.onFailure(refreshError as AxiosError),
                     );
                     failedRequestQueue = [];
 
-                    // Clear memory token
+                    // Clear the token and redirect to login
                     removeToken();
 
-                    // Redirect to login page
+                    // Redirect to login page (client-side only)
                     if (typeof window !== "undefined") {
-                        window.location.href = "/login";
+                        // Add a small delay to prevent immediate redirect during multiple failed requests
+                        setTimeout(() => {
+                            window.location.href = "/login";
+                        }, 100);
                     }
 
                     return Promise.reject(refreshError);
@@ -118,6 +160,15 @@ api.interceptors.response.use(
                     },
                 });
             });
+        }
+
+        // Handle other error types
+        if (error.response?.status === 403) {
+            console.error(
+                "Access forbidden. User may not have required permissions.",
+            );
+        } else if (error.response?.status === 500) {
+            console.error("Server error. Please try again later.");
         }
 
         return Promise.reject(error);

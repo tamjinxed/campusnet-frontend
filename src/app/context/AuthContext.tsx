@@ -6,93 +6,196 @@ import React, {
     useState,
     useEffect,
     ReactNode,
+    useCallback,
 } from "react";
 import api from "../lib/axios";
 import {
-    getAccessToken,
     setAccessToken,
     removeToken,
+    hasValidToken,
 } from "../lib/token.service";
 import { useRouter } from "next/navigation";
 
-interface AuthState {
-    user;
-    isLoading: boolean;
-    login: (credentials) => Promise<void>;
-    logout: () => void;
+interface LoginCredentials {
+    email: string;
+    password: string;
 }
 
-const AuthContext = createContext(undefined);
+interface AuthState {
+    user: any;
+    isLoading: boolean;
+    error: string | null;
+    isInitialized: boolean;
+    login: (credentials: LoginCredentials) => Promise<void>;
+    logout: () => void;
+    clearError: () => void;
+    refreshUserData: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    // Run an initial app load to check for an existing session
-    useEffect(() => {
-        const verifyUser = async () => {
-            // If an access token already exists in memory, then assume user is logged in
-            if (getAccessToken()) {
-                try {
-                    const { data } = await api.get("/users/me");
-                    console.log(data.data.user);
-                    setUser(data.data.user);
-                } catch (error) {
-                    console.log(error);
-                    setUser(null);
-                }
+    const clearError = useCallback(() => setError(null), []);
+
+    // Verify user each time the component mounts
+    const verifyUser = useCallback(async () => {
+        try {
+            // If no valid token, then return
+            if (!hasValidToken()) {
+                setUser(null);
+                setError(null);
+                return;
             }
-            setIsLoading(false);
-        };
-        verifyUser();
+
+            // If user has valid token, then get user data
+            const { data } = await api.get("/users/me");
+            const serverUser = data.data.user;
+
+            setUser(serverUser);
+            setError(null);
+        } catch (error: any) {
+            handleVerificationError(error);
+        }
     }, []);
 
-    const login = async (credentials) => {
-        try {
-            const { data } = await api.post("/auth/login", credentials);
-            const { accessToken, user } = data.data;
-            setAccessToken(accessToken);
-            setUser(user);
+    // Handler for verification error
+    const handleVerificationError = useCallback((err: any) => {
+        const status = err.response?.status;
+        if (status === 429) {
+            setError("Too many requests. Please wait a moment.");
+        } else if (status === 401) {
+            setUser(null);
+            removeToken();
+            setError(null);
+        } else if (status >= 500) {
+            setError("Server error. Please try again later.");
+        } else {
+            setUser(null);
+            removeToken();
+            setError("Authentication failed. Please login again.");
+        }
+    }, []);
 
+    // Refresh User Data
+    const refreshUserData = useCallback(async () => {
+        setIsLoading(true);
+        await verifyUser();
+        setIsLoading(false);
+    }, [verifyUser]);
+
+    // Listen for storage changes (token updates from other tabs)
+    useEffect(() => {
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === "access_token") {
+                console.log("Token updated in another tab");
+
+                verifyUser();
+            }
+        };
+
+        if (typeof window !== "undefined") {
+            window.addEventListener("storage", handleStorageChange);
+            return () =>
+                window.removeEventListener("storage", handleStorageChange);
+        }
+    }, [verifyUser]);
+
+    // Initialize auth state
+    useEffect(() => {
+        const initializeAuth = async () => {
+            setIsLoading(true);
+            await verifyUser();
+            setIsLoading(false);
+            setIsInitialized(true);
+        };
+
+        initializeAuth();
+    }, [verifyUser]);
+
+    // Handle visibility state change
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (
+                document.visibilityState === "visible" &&
+                user &&
+                hasValidToken()
+            ) {
+                verifyUser();
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () =>
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+    }, [user, verifyUser]);
+
+    const login = async (credentials: LoginCredentials) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const { data } = await api.post("/auth/login", credentials);
+            const { accessToken, user: userData } = data.data;
+            setAccessToken(accessToken);
+            setUser(userData);
             router.push("/dashboard");
-        } catch (error) {
-            console.log(error);
-            throw error;
+        } catch (err: any) {
+            const status = err.response?.status;
+            if (status === 429)
+                setError("Too many login attempts. Please wait.");
+            else if (status === 401) setError("Invalid email or password.");
+            else if (status >= 500) setError("Server error. Try again later.");
+            else setError("Login failed. Please check your credentials.");
+            throw err;
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const logout = async () => {
         try {
+            setIsLoading(true);
             await api.post("/auth/logout");
-        } catch (error) {
-            console.error(error);
+        } catch (err: any) {
+            if (err.response?.status !== 429)
+                console.error("Logout error:", err);
         } finally {
             setUser(null);
             removeToken();
+            setError(null);
+            setIsLoading(false);
             router.push("/login");
         }
     };
 
-    const authContextValue = {
-        user,
-        isLoading,
-        login,
-        logout,
-    };
-
     return (
-        <AuthContext.Provider value={authContextValue}>
+        <AuthContext.Provider
+            value={{
+                user,
+                isLoading,
+                error,
+                isInitialized,
+                login,
+                logout,
+                clearError,
+                refreshUserData,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
 };
 
-// Custom hook to use AuthContext
-export const useAuth = () => {
+export const useAuth = (): AuthState => {
     const context = useContext(AuthContext);
-    if (context === undefined) {
+    if (!context)
         throw new Error("useAuth must be used within an AuthProvider");
-    }
     return context;
 };
