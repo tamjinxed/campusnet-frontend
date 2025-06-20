@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Check, X, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import api from "../lib/axios";
 
 interface VerificationState {
@@ -256,4 +256,10 @@ const VerifyEmail = () => {
     );
 };
 
-export default VerifyEmail;
+export function VerifyEmailPage() {
+    return (
+        <Suspense>
+            <VerifyEmail />
+        </Suspense>
+    );
+}

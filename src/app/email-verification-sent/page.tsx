@@ -5,10 +5,10 @@ import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
 import { Mail, Loader2 } from "lucide-react";
 import api from "@/app/lib/axios";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-const EmailVerificationSentPage = () => {
+const EmailVerificationSent = () => {
     const searchParams = useSearchParams();
     const email = searchParams.get("email");
 
@@ -141,4 +141,10 @@ const EmailVerificationSentPage = () => {
     );
 };
 
-export default EmailVerificationSentPage;
+export function EmailVerificationSentPage() {
+    return (
+        <Suspense>
+            <EmailVerificationSent />
+        </Suspense>
+    );
+}
