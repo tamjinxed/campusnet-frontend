@@ -256,7 +256,7 @@ const VerifyEmail = () => {
     );
 };
 
-export function VerifyEmailPage() {
+export default function VerifyEmailPage() {
     return (
         <Suspense>
             <VerifyEmail />

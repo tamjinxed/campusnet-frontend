@@ -141,7 +141,7 @@ const EmailVerificationSent = () => {
     );
 };
 
-export function EmailVerificationSentPage() {
+export default function EmailVerificationSentPage() {
     return (
         <Suspense>
             <EmailVerificationSent />
