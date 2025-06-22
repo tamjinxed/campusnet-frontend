@@ -47,7 +47,8 @@ export default function SignUp() {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
-    if (errors[name as keyof typeof errors]) {
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors] || errors.general) {
       setErrors({
         ...errors,
         [name]: "",
@@ -71,21 +72,28 @@ export default function SignUp() {
       general: "",
     };
 
+    // Validate first name
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
       isValid = false;
     }
 
+    // Validate last name
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required";
       isValid = false;
     }
 
+    // Validate username
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
       isValid = false;
+    } else if (formData.username.length < 4) {
+      newErrors.username = "Username must be at least 4 characters";
+      isValid = false;
     }
 
+    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
       isValid = false;
@@ -94,14 +102,19 @@ export default function SignUp() {
       isValid = false;
     }
 
+    // Validate password
     if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
       isValid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(formData.password)) {
+      newErrors.password = "Password must include uppercase, lowercase, number, and special character";
+      isValid = false;
     }
 
+    // Validate confirm password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
       isValid = false;
@@ -110,6 +123,7 @@ export default function SignUp() {
       isValid = false;
     }
 
+    // Validate terms agreement
     if (!formData.agreeTerms) {
       newErrors.agreeTerms = "You must agree to the terms";
       isValid = false;
@@ -121,15 +135,18 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    
+    if (!validateForm()) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const { data } = await api.post("/auth/register", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        username: formData.username,
-        email: formData.email,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        username: formData.username.trim(),
+        email: formData.email.trim(),
         password: formData.password,
       });
       router.push(`/email-verification-sent?email=${encodeURIComponent(formData.email)}`);
@@ -261,8 +278,8 @@ export default function SignUp() {
         </div>
 
         {/* Right Side Form */}
-        <div className="flex flex-1 items-center justify-center px-6 py-12 ">
-          {/* Floating Network Nodes (Mirrored from left side) */}
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          {/* Floating Network Nodes (Mobile) */}
           <div className="absolute inset-0 lg:hidden flex items-center justify-center opacity-20">
             <div className="relative w-full h-full">
               {/* Central Hub */}
