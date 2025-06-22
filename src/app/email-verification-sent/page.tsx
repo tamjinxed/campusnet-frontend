@@ -113,7 +113,7 @@ const EmailVerificationSent = () => {
                         <Button
                             onClick={handleResendEmail}
                             disabled={isResending}
-                            className="bg-[#5928E4] hover:bg-[#4a22c7] text-white px-8 py-3 text-base font-medium"
+                            className="bg-campus-gradient hover:opacity-90 text-white px-6"
                         >
                             {isResending ? (
                                 <>

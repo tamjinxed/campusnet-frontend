@@ -198,7 +198,7 @@ const VerifyEmail = () => {
                                         <Button
                                             onClick={handleResendEmail}
                                             disabled={isResending}
-                                            className="flex-1 bg-[#5928E4] hover:bg-[#4a22c7] text-white"
+                                            className="flex-1 bg-campus-gradient hover:opacity-90 text-white px-6"
                                         >
                                             {isResending ? (
                                                 <>
@@ -224,7 +224,7 @@ const VerifyEmail = () => {
                             <div className="pt-4 space-y-3">
                                 <Button
                                     onClick={handleRequestEmailView}
-                                    className="bg-[#5928E4] hover:bg-[#4a22c7] text-white px-8 py-3 text-base font-medium"
+                                    className="bg-campus-gradient hover:opacity-90 text-white px-6"
                                 >
                                     Request New Verification Email
                                 </Button>
