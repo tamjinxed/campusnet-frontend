@@ -6,11 +6,11 @@ import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Mail, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../lib/axios";
 
-export default function ForgotPasswordPage() {
+const ForgotPassword = () => {
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
@@ -185,5 +185,13 @@ export default function ForgotPasswordPage() {
                 </div>
             </main>
         </div>
+    );
+};
+
+export default function ForgotPasswordPage() {
+    return (
+        <Suspense>
+            <ForgotPassword />
+        </Suspense>
     );
 }

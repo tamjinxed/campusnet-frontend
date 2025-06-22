@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -15,7 +15,7 @@ interface ResetPasswordState {
     message?: string;
 }
 
-export default function ResetPasswordPage() {
+const ResetPassword = () => {
     const params = useSearchParams();
     const token = params.get("token");
     const router = useRouter();
@@ -222,5 +222,13 @@ export default function ResetPasswordPage() {
                 </div>
             </main>
         </div>
+    );
+};
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense>
+            <ResetPassword />
+        </Suspense>
     );
 }
