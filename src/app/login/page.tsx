@@ -16,6 +16,7 @@ import Link from "next/link";
 // For Auth
 import { useAuth } from "../context/AuthContext";
 
+
 const Login = () => {
     const [formData, setFormData] = useState({
         email: "",
@@ -182,8 +183,19 @@ const Login = () => {
                                         </p>
                                     </div>
                                 </form>
+                                <div className="pt-2 text-center">
+    <Button
+        asChild
+        variant="outline"
+        className="w-full h-12 text-campus-purple font-semibold border-campus-purple hover:bg-campus-purple/10"
+    >
+        <Link href="/dashboard">Preview Dashboard </Link>
+    </Button>
+</div>
+
                             </CardContent>
                         </Card>
+                        
                     </div>
                 </div>
             </div>
