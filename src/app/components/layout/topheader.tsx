@@ -46,7 +46,7 @@ export function TopHeader() {
           {/* Left section - Logo and search (desktop) */}
           <div className="flex items-center space-x-4">
             {/* CampusNet Logo - Links to Dashboard */}
-            <Link href="/dashboard" className="text-xl font-bold text-purple-600 hover:opacity-80 transition-opacity">
+            <Link href="/dashboard" className="text-xl campus-gradient-texty hover:opacity-80 transition-opacity">
               CampusNet
             </Link>
             
