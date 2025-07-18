@@ -1,0 +1,213 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { X, Upload, User } from "lucide-react";
+import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/app/components/ui/dialog";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Textarea } from "@/app/components/ui/textarea";
+import { Checkbox } from "@/app/components/ui/checkbox";
+
+interface CreateGroupModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) => {
+  const [groupName, setGroupName] = useState("");
+  const [description, setDescription] = useState("");
+  const [rules, setRules] = useState("");
+  const [welcomeNote, setWelcomeNote] = useState("");
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [university, setUniversity] = useState("");
+
+  const coverPhotoRef = useRef<HTMLInputElement>(null);
+  const profilePhotoRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverPhoto(URL.createObjectURL(file));
+    }
+  };
+
+  const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePhoto(URL.createObjectURL(file));
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-white rounded-lg border border-gray-200 shadow-xl">
+        <DialogHeader className="px-6 py-4 border-b border-gray-200 bg-white rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Create Group</h2>
+          </div>
+        </DialogHeader>
+
+        <div className="flex bg-white rounded-b-lg">
+          <div className="flex-1 px-6 py-4 space-y-6">
+            {/* Wrapper for Cover + Profile */}
+            <div className="relative w-full">
+              {/* Cover Photo */}
+              <div className="h-40 w-full rounded-t-lg overflow-hidden bg-gray-200 relative">
+                <input
+                  type="file"
+                  ref={coverPhotoRef}
+                  onChange={handleCoverPhotoUpload}
+                  className="hidden"
+                  accept="image/*"
+                />
+                {coverPhoto ? (
+                  <Image
+                    src={coverPhoto}
+                    alt="Cover"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    className="h-full w-full flex items-center justify-center text-gray-500 cursor-pointer"
+                    onClick={() => coverPhotoRef.current?.click()}
+                  >
+                    Click to Upload Cover Photo
+                  </div>
+                )}
+
+                {/* Cover Edit Button */}
+                <button
+                  onClick={() => coverPhotoRef.current?.click()}
+                  className="absolute top-2 right-2 p-1 bg-white rounded-full shadow hover:bg-gray-100"
+                >
+                  <Upload className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Profile Photo */}
+              <div
+                className="absolute -bottom-10 left-6 w-20 h-20 rounded-full border-4 border-white bg-gray-100 overflow-hidden cursor-pointer shadow-md z-10"
+                onClick={() => profilePhotoRef.current?.click()}
+              >
+                {profilePhoto ? (
+                  <Image
+                    src={profilePhoto}
+                    alt="Profile"
+                    width={80}
+                    height={80}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-gray-400 m-auto mt-6" />
+                )}
+                <input
+                  type="file"
+                  ref={profilePhotoRef}
+                  onChange={handleProfilePhotoUpload}
+                  className="hidden"
+                  accept="image/*"
+                />
+              </div>
+            </div>
+
+            {/* Add margin below floating profile image */}
+            <div className="mt-16" />
+
+            {/* Group Name */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Group Name</label>
+              <Input
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Enter group name"
+                className="w-full border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Tell people what your group is about"
+                className="w-full min-h-[100px] resize-none border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Rules */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Rules</label>
+              <Textarea
+                value={rules}
+                onChange={(e) => setRules(e.target.value)}
+                placeholder="Set some ground rules for your group"
+                className="w-full min-h-[100px] resize-none border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Editable Community Name */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Community</label>
+              <Input
+                type="text"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                placeholder="ABC University Community"
+                className="w-full border-gray-300 focus:border-purple-500 focus:ring-purple-500 placeholder:text-gray-400"
+              />
+            </div>
+
+            {/* Privacy Settings */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Privacy</label>
+              <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allow-members"
+                    defaultChecked
+                    className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                  />
+                  <label htmlFor="allow-members" className="text-sm">
+                    New members need admin approval
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allow-users"
+                    className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                  />
+                  <label htmlFor="allow-users" className="text-sm">
+                    New posts needs admin review
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Welcome Note */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Welcome Note</label>
+              <Textarea
+                value={welcomeNote}
+                onChange={(e) => setWelcomeNote(e.target.value)}
+                placeholder="Write a welcome message for new members"
+                className="w-full min-h-[100px] resize-none border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              />
+            </div>
+
+            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md">
+              Create Group
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
