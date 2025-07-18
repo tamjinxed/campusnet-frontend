@@ -50,17 +50,19 @@ export default function GroupsPage() {
       {/* Top Header */}
       <TopHeader />
 
-      <div className="max-w-7xl mx-auto flex gap-6 p-6">
-        {/* Left Sidebar - Using the new component */}
-        <LeftSidebar />
+      <div className="max-w-7xl mx-auto flex gap-6 p-4 md:p-6">
+        {/* Left Sidebar - Hidden on mobile */}
+        <div className="hidden md:block">
+          <LeftSidebar />
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-1">
+        {/* Main Content - Full width on mobile */}
+        <main className="flex-1 w-full md:w-auto space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex space-x-1 w-full sm:w-auto">
               <button 
                 onClick={() => setActiveTab("your-groups")}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base ${
                   activeTab === "your-groups" 
                     ? "bg-purple-600 text-white" 
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -70,7 +72,7 @@ export default function GroupsPage() {
               </button>
               <button 
                 onClick={() => setActiveTab("requested-groups")}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base ${
                   activeTab === "requested-groups" 
                     ? "bg-purple-600 text-white" 
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -81,7 +83,7 @@ export default function GroupsPage() {
             </div>
             
             <Button 
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
               onClick={() => setIsCreateGroupModalOpen(true)}
             >
               Create Group
@@ -93,17 +95,19 @@ export default function GroupsPage() {
             <div className="space-y-4">
               {yourGroups.map((group, index) => (
                 <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="flex space-x-6">
-                      <Image 
-                        src={group.image} 
-                        alt={group.name}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-lg object-cover"
-                      />
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                      <div className="w-full sm:w-24 h-24">
+                        <Image 
+                          src={group.image} 
+                          alt={group.name}
+                          width={96}
+                          height={96}
+                          className="w-full h-full rounded-lg object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                           <div>
                             <h3 className="font-semibold text-lg">{group.name}</h3>
                             <p className="text-sm text-gray-600">{group.members}</p>
@@ -125,21 +129,23 @@ export default function GroupsPage() {
 
           {/* Groups You May be Interested In */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Groups You May be Interested In</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Groups You May be Interested In</h2>
             <div className="space-y-4">
               {suggestedGroups.map((group, index) => (
                 <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="flex space-x-6">
-                      <Image 
-                        src={group.image} 
-                        alt={group.name}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-lg object-cover"
-                      />
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                      <div className="w-full sm:w-24 h-24">
+                        <Image 
+                          src={group.image} 
+                          alt={group.name}
+                          width={96}
+                          height={96}
+                          className="w-full h-full rounded-lg object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                           <div>
                             <h3 className="font-semibold text-lg">{group.name}</h3>
                             <p className="text-sm text-gray-600">{group.members}</p>

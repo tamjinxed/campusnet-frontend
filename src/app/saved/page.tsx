@@ -33,43 +33,48 @@ const SavedItems = () => {
     <div className="min-h-screen bg-gray-50">
       <TopHeader />
       
-      <div className="max-w-7xl mx-auto flex gap-6 p-6">
-        <LeftSidebar />
+      <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 p-4 md:p-6">
+        {/* Left Sidebar - Hidden on mobile, shown on md and larger */}
+        <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0">
+          <LeftSidebar />
+        </div>
 
-        <main className="flex-1">
+        <main className="flex-1 overflow-x-hidden">
           <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6 border-b">
-              <h1 className="text-xl font-semibold">Saved Items</h1>
+            <div className="p-4 md:p-6 border-b">
+              <h1 className="text-lg md:text-xl font-semibold">Saved Items</h1>
             </div>
             
             <div className="divide-y">
               {savedItems.map((item) => (
-                <div key={item.id} className="p-6 flex gap-4">
-                  <Avatar className="w-12 h-12">
+                <div key={item.id} className="p-4 md:p-6 flex gap-3 md:gap-4">
+                  <Avatar className="w-10 h-10 md:w-12 md:h-12">
                     <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback className="bg-purple-100 text-purple-600">
+                    <AvatarFallback className="bg-purple-100 text-purple-600 text-sm md:text-base">
                       {item.author.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{item.author}</h3>
-                        <p className="text-sm text-gray-600">{item.role}</p>
+                        <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.author}</h3>
+                        <p className="text-xs md:text-sm text-gray-600">{item.role}</p>
                       </div>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="p-1 md:p-2">
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>
                     
-                    <p className="text-gray-700 mt-3 leading-relaxed">{item.content}</p>
+                    <p className="text-gray-700 mt-2 md:mt-3 text-sm md:text-base leading-relaxed line-clamp-3">
+                      {item.content}
+                    </p>
                     
-                    <div className="mt-4">
+                    <div className="mt-2 md:mt-4">
                       <img 
                         src={item.image} 
                         alt="Post content" 
-                        className="w-20 h-16 rounded-lg object-cover"
+                        className="w-16 h-12 md:w-20 md:h-16 rounded-lg object-cover"
                       />
                     </div>
                   </div>

@@ -20,12 +20,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopHeader />
-      <div className="max-w-7xl mx-auto flex gap-6 p-6">
-        {/* Left Sidebar */}
-        <LeftSidebar />
+      <div className="max-w-7xl mx-auto flex gap-6 p-4 md:p-6">
+        {/* Left Sidebar - Hidden on mobile */}
+        <div className="hidden md:block">
+          <LeftSidebar />
+        </div>
 
-        {/* Main Feed */}
-        <main className="flex-1 space-y-6">
+        {/* Main Feed - Full width on mobile */}
+        <main className="flex-1 w-full md:w-auto space-y-6">
           {/* Create Post Card */}
           <Card className="rounded-lg shadow-sm">
             <CardContent className="p-4">
@@ -48,21 +50,21 @@ export default function Dashboard() {
                     onClick={() => setIsCreatePostOpen(true)}
                   >
                     <Image className="w-5 h-5" />
-                    <span className="text-sm">Photo</span>
+                    <span className="hidden sm:inline text-sm">Photo</span>
                   </button>
                   <button 
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
                     onClick={() => setIsCreatePostOpen(true)}
                   >
                     <CalendarDays className="w-5 h-5" />
-                    <span className="text-sm">Event</span>
+                    <span className="hidden sm:inline text-sm">Event</span>
                   </button>
                   <button 
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
                     onClick={() => setIsCreatePostOpen(true)}
                   >
                     <ListChecks className="w-5 h-5" />
-                    <span className="text-sm">Poll</span>
+                    <span className="hidden sm:inline text-sm">Poll</span>
                   </button>
                 </div>
                 <Button 
@@ -71,7 +73,7 @@ export default function Dashboard() {
                   onClick={() => setIsCreatePostOpen(true)}
                 >
                   <Plus className="w-5 h-5 mr-2" />
-                  Create Post
+                  <span className="hidden sm:inline">Create Post</span>
                 </Button>
               </div>
             </CardContent>
@@ -83,8 +85,10 @@ export default function Dashboard() {
           <FeedPost />
         </main>
 
-        {/* Right Sidebar */}
-        <RightSidebar />
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <RightSidebar />
+        </div>
       </div>
 
       {/* Create Post Modal */}

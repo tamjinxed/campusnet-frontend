@@ -8,7 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Badge } from "@/app/components/ui/badge";
-import { Search, Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Search, Calendar, MapPin, Users, Clock, Plus } from "lucide-react";
 import Image from "next/image";
 import CreateEventModal from "@/app/components/modals/CreateEventModal";
 
@@ -88,15 +88,18 @@ const EventsPage = () => {
     <div className="min-h-screen bg-gray-50">
       <TopHeader />
       
-      <div className="max-w-7xl mx-auto flex gap-6 p-6">
-        <LeftSidebar />
+      <div className="max-w-7xl mx-auto flex gap-6 p-4 lg:p-6">
+        {/* Left Sidebar - Hidden on mobile, shown on md and larger */}
+        <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0">
+          <LeftSidebar />
+        </div>
 
-        <main className="flex-1 space-y-6">
+        <main className="flex-1 space-y-6 overflow-x-hidden">
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Events</h1>
-              <p className="text-gray-600">Discover and join exciting campus events</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Events</h1>
+              <p className="text-sm md:text-base text-gray-600">Discover and join exciting campus events</p>
             </div>
           </div>
 
@@ -106,20 +109,21 @@ const EventsPage = () => {
               className="flex-1 border border-gray-300 rounded-lg px-4 py-3 h-12 flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => setIsCreateEventModalOpen(true)}
             >
-              <p className="text-gray-600 text-lg">Want to Organize an Event?</p>
+              <p className="text-gray-600 text-sm md:text-lg">Want to Organize an Event?</p>
             </div>
             <Button 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 h-12"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 md:px-8 h-12"
               onClick={() => setIsCreateEventModalOpen(true)}
             >
-              Create Event
+              <Plus className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Create Event</span>
             </Button>
           </div>
 
           {/* Your Events Section */}
           <section className="space-y-6">
-            <h2 className="text-2xl font-semibold text-gray-900">Your Events</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Your Events</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {yourEvents.map((event) => (
                 <EventCard 
                   key={event.id} 
@@ -134,8 +138,8 @@ const EventsPage = () => {
 
           {/* Upcoming Events Section */}
           <section className="space-y-6">
-            <h2 className="text-2xl font-semibold text-gray-900">Upcoming Events</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Upcoming Events</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {upcomingEvents.map((event) => (
                 <EventCard 
                   key={event.id} 
@@ -158,7 +162,6 @@ const EventsPage = () => {
   );
 };
 
-// Extracted EventCard component for better reusability
 const EventCard = ({ 
   event, 
   isRegistered = false, 
@@ -180,8 +183,8 @@ const EventCard = ({
   actionVariant?: "default" | "outline";
 }) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <div className="relative h-48">
+    <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
+      <div className="relative h-40 md:h-48">
         <Image
           src={event.image}
           alt={event.title}
@@ -190,23 +193,23 @@ const EventCard = ({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {isRegistered && (
-          <Badge className="absolute top-4 right-4 bg-green-500 text-white">
+          <Badge className="absolute top-2 right-2 md:top-4 md:right-4 bg-green-500 text-white text-xs md:text-sm">
             Registered
           </Badge>
         )}
       </div>
-      <CardHeader>
-        <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
-        <p className="text-sm text-purple-600 font-medium">by {event.organizer}</p>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base md:text-lg line-clamp-2">{event.title}</CardTitle>
+        <p className="text-xs md:text-sm text-purple-600 font-medium">by {event.organizer}</p>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2 mb-4">
-          <EventDetail icon={<Calendar className="w-4 h-4" />} text={event.date} />
-          <EventDetail icon={<Clock className="w-4 h-4" />} text={event.time} />
-          <EventDetail icon={<MapPin className="w-4 h-4" />} text={event.location} />
-          <EventDetail icon={<Users className="w-4 h-4" />} text={`${event.attendees} attending`} />
+      <CardContent className="flex-1 flex flex-col">
+        <div className="space-y-1 md:space-y-2 mb-3 md:mb-4">
+          <EventDetail icon={<Calendar className="w-3 h-3 md:w-4 md:h-4" />} text={event.date} />
+          <EventDetail icon={<Clock className="w-3 h-3 md:w-4 md:h-4" />} text={event.time} />
+          <EventDetail icon={<MapPin className="w-3 h-3 md:w-4 md:h-4" />} text={event.location} />
+          <EventDetail icon={<Users className="w-3 h-3 md:w-4 md:h-4" />} text={`${event.attendees} attending`} />
         </div>
-        <Button variant={actionVariant} className="w-full">
+        <Button variant={actionVariant} className="w-full mt-auto text-sm md:text-base">
           {actionLabel}
         </Button>
       </CardContent>
@@ -214,11 +217,10 @@ const EventCard = ({
   );
 };
 
-// Small helper component for event details
 const EventDetail = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <div className="flex items-center text-gray-600 text-sm">
-    <span className="mr-2">{icon}</span>
-    {text}
+  <div className="flex items-center text-gray-600 text-xs md:text-sm">
+    <span className="mr-1 md:mr-2">{icon}</span>
+    <span className="truncate">{text}</span>
   </div>
 );
 

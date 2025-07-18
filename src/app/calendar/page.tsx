@@ -73,29 +73,34 @@ const Calendar = () => {
     <div className="min-h-screen bg-gray-50">
       <TopHeader />
       
-      <div className="max-w-7xl mx-auto flex gap-6 p-6">
-        <LeftSidebar />
+      <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 p-4 md:p-6">
+        {/* Left Sidebar - Hidden on mobile, shown on md and larger */}
+        <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0">
+          <LeftSidebar />
+        </div>
 
-        <main className="flex-1">
+        <main className="flex-1 overflow-x-hidden">
           <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold">Calendar</h1>
-                <div className="flex items-center space-x-4">
+            <div className="p-4 md:p-6 border-b">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <h1 className="text-lg md:text-xl font-semibold">Calendar</h1>
+                <div className="flex items-center space-x-2 md:space-x-4">
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => navigateMonth('prev')}
+                    className="p-2"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-lg font-medium">
+                  <span className="text-base md:text-lg font-medium whitespace-nowrap">
                     {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                   </span>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => navigateMonth('next')}
+                    className="p-2"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -103,16 +108,22 @@ const Calendar = () => {
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
-                {/* Header row */}
+            <div className="p-2 md:p-6">
+              {/* Days of week header */}
+              <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden mb-1">
                 {daysOfWeek.map((day) => (
-                  <div key={day} className="bg-gray-50 p-4 text-center font-medium text-gray-700">
-                    {day}
+                  <div 
+                    key={day} 
+                    className="bg-gray-50 p-2 md:p-4 text-center font-medium text-gray-700 text-xs md:text-sm"
+                  >
+                    {day.substring(0, 1)}
+                    <span className="hidden sm:inline">{day.substring(1)}</span>
                   </div>
                 ))}
-                
-                {/* Calendar days */}
+              </div>
+              
+              {/* Calendar grid */}
+              <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
                 {days.map((day, index) => {
                   const dateStr = day.toISOString().split('T')[0];
                   const dayEvents = events[dateStr] || [];
@@ -121,22 +132,27 @@ const Calendar = () => {
                   return (
                     <div 
                       key={index} 
-                      className={`bg-white p-2 min-h-[120px] ${
+                      className={`bg-white p-1 md:p-2 min-h-[60px] md:min-h-[80px] lg:min-h-[120px] ${
                         !isCurrentMonth ? 'text-gray-400' : ''
                       }`}
                     >
-                      <div className="text-sm font-medium mb-2">
+                      <div className="text-xs md:text-sm font-medium mb-1">
                         {day.getDate()}
                       </div>
-                      <div className="space-y-1">
-                        {dayEvents.map((event, eventIndex) => (
+                      <div className="space-y-0.5 md:space-y-1 overflow-hidden">
+                        {dayEvents.slice(0, 2).map((event, eventIndex) => (
                           <div 
                             key={eventIndex}
-                            className={`text-xs px-2 py-1 rounded ${event.color} truncate`}
+                            className={`text-[10px] md:text-xs px-1 py-0.5 md:px-2 md:py-1 rounded ${event.color} truncate`}
                           >
                             {event.title}
                           </div>
                         ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-[10px] md:text-xs text-gray-500">
+                            +{dayEvents.length - 2} more
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
