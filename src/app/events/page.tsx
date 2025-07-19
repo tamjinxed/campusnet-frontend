@@ -1,20 +1,21 @@
-// app/events/page.tsx
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+
 import { TopHeader } from "@/app/components/layout/topheader";
 import { LeftSidebar } from "@/app/components/dashboard/LeftSidebar";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { Input } from "@/app/components/ui/input";
 import { Badge } from "@/app/components/ui/badge";
 import { Search, Calendar, MapPin, Users, Clock, Plus } from "lucide-react";
-import Image from "next/image";
+
 import CreateEventModal from "@/app/components/modals/CreateEventModal";
 
 const EventsPage = () => {
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
-  
+
   const yourEvents = [
     {
       id: 1,
@@ -22,7 +23,7 @@ const EventsPage = () => {
       date: "Dec 15, 2024",
       time: "9:00 AM",
       location: "Engineering Building, Room 101",
-      organizer: "CS Student Club", 
+      organizer: "CS Student Club",
       attendees: 45,
       image: "/placeholder.svg",
       status: "registered"
@@ -30,24 +31,24 @@ const EventsPage = () => {
     {
       id: 2,
       title: "Robotics Workshop",
-      date: "Dec 20, 2024", 
+      date: "Dec 20, 2024",
       time: "2:00 PM",
       location: "Student Center, Main Hall",
       organizer: "Robotics Club",
       attendees: 78,
-      image: "/placeholder.svg", 
+      image: "/placeholder.svg",
       status: "registered"
     },
     {
       id: 3,
-      title: "Photography Exhibition", 
+      title: "Photography Exhibition",
       date: "Dec 25, 2024",
       time: "6:00 PM",
       location: "Campus Auditorium",
       organizer: "Photography Club",
       attendees: 32,
       image: "/placeholder.svg",
-      status: "registered" 
+      status: "registered"
     }
   ];
 
@@ -56,14 +57,14 @@ const EventsPage = () => {
       id: 4,
       title: "Tech Talk: AI Trends",
       date: "Jan 5, 2025",
-      time: "10:00 AM", 
+      time: "10:00 AM",
       location: "Computer Lab 2",
       organizer: "Tech Society",
       attendees: 23,
       image: "/placeholder.svg"
     },
     {
-      id: 5, 
+      id: 5,
       title: "Debate Competition",
       date: "Jan 8, 2025",
       time: "3:00 PM",
@@ -74,10 +75,10 @@ const EventsPage = () => {
     },
     {
       id: 6,
-      title: "Sports Tournament", 
+      title: "Sports Tournament",
       date: "Jan 12, 2025",
       time: "7:00 PM",
-      location: "Campus Recreation Center", 
+      location: "Campus Recreation Center",
       organizer: "Athletics Club",
       attendees: 89,
       image: "/placeholder.svg"
@@ -87,15 +88,15 @@ const EventsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopHeader />
-      
+
       <div className="max-w-7xl mx-auto flex gap-6 p-4 lg:p-6">
-        {/* Left Sidebar - Hidden on mobile, shown on md and larger */}
+        {/* Left Sidebar - Hidden on mobile */}
         <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0">
           <LeftSidebar />
         </div>
 
         <main className="flex-1 space-y-6 overflow-x-hidden">
-          {/* Header Section */}
+          {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Events</h1>
@@ -103,15 +104,15 @@ const EventsPage = () => {
             </div>
           </div>
 
-          {/* Event Creation Section */}
+          {/* Event Creation */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div 
+            <div
               className="flex-1 border border-gray-300 rounded-lg px-4 py-3 h-12 flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => setIsCreateEventModalOpen(true)}
             >
               <p className="text-gray-600 text-sm md:text-lg">Want to Organize an Event?</p>
             </div>
-            <Button 
+            <Button
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 md:px-8 h-12"
               onClick={() => setIsCreateEventModalOpen(true)}
             >
@@ -120,31 +121,31 @@ const EventsPage = () => {
             </Button>
           </div>
 
-          {/* Your Events Section */}
+          {/* Your Events */}
           <section className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Your Events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {yourEvents.map((event) => (
-                <EventCard 
-                  key={event.id} 
-                  event={event} 
-                  isRegistered 
-                  actionLabel="View Details" 
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  isRegistered
+                  actionLabel="View Details"
                   actionVariant="outline"
                 />
               ))}
             </div>
           </section>
 
-          {/* Upcoming Events Section */}
+          {/* Upcoming Events */}
           <section className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Upcoming Events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {upcomingEvents.map((event) => (
-                <EventCard 
-                  key={event.id} 
-                  event={event} 
-                  actionLabel="Join Event" 
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  actionLabel="Join Event"
                   actionVariant="default"
                 />
               ))}
@@ -153,8 +154,7 @@ const EventsPage = () => {
         </main>
       </div>
 
-      {/* Create Event Modal */}
-      <CreateEventModal 
+      <CreateEventModal
         open={isCreateEventModalOpen}
         onOpenChange={setIsCreateEventModalOpen}
       />
@@ -162,11 +162,11 @@ const EventsPage = () => {
   );
 };
 
-const EventCard = ({ 
-  event, 
-  isRegistered = false, 
-  actionLabel, 
-  actionVariant = "default" 
+const EventCard = ({
+  event,
+  isRegistered = false,
+  actionLabel,
+  actionVariant = "default"
 }: {
   event: {
     id: number;
@@ -182,8 +182,17 @@ const EventCard = ({
   actionLabel: string;
   actionVariant?: "default" | "outline";
 }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/events/${event.id}`);
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
+    <Card
+      onClick={handleClick}
+      className="hover:shadow-lg transition-shadow h-full flex flex-col cursor-pointer"
+    >
       <div className="relative h-40 md:h-48">
         <Image
           src={event.image}
@@ -209,7 +218,14 @@ const EventCard = ({
           <EventDetail icon={<MapPin className="w-3 h-3 md:w-4 md:h-4" />} text={event.location} />
           <EventDetail icon={<Users className="w-3 h-3 md:w-4 md:h-4" />} text={`${event.attendees} attending`} />
         </div>
-        <Button variant={actionVariant} className="w-full mt-auto text-sm md:text-base">
+        <Button
+          variant={actionVariant}
+          className="w-full mt-auto text-sm md:text-base"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }}
+        >
           {actionLabel}
         </Button>
       </CardContent>
