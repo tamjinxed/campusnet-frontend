@@ -1,10 +1,9 @@
 "use client";
 
-import { Image, CalendarDays, ListChecks, Plus } from "lucide-react";
+import { Image, Video, ListChecks } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/app/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
-import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
 import FeedPost from "@/app/components/dashboard/FeedPost";
 import RightSidebar from "@/app/components/dashboard/RightSidebar";
@@ -56,8 +55,8 @@ export default function Dashboard() {
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
                     onClick={() => setIsCreatePostOpen(true)}
                   >
-                    <CalendarDays className="w-5 h-5" />
-                    <span className="hidden sm:inline text-sm">Event</span>
+                    <Video className="w-5 h-5" />
+                    <span className="hidden sm:inline text-sm">Video</span>
                   </button>
                   <button 
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
@@ -67,14 +66,6 @@ export default function Dashboard() {
                     <span className="hidden sm:inline text-sm">Poll</span>
                   </button>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  className="text-purple-600 hover:text-purple-800 font-medium"
-                  onClick={() => setIsCreatePostOpen(true)}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  <span className="hidden sm:inline">Create Post</span>
-                </Button>
               </div>
             </CardContent>
           </Card>

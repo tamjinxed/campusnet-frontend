@@ -25,36 +25,49 @@ import {
 interface CreatePostModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onOpenEvent: () => void;
+  onOpenEvent?: () => void; // Made optional since it's not used in the component
 }
 
 type Mode = "default" | "poll";
 
+interface FileWithPreview extends File {
+  preview?: string;
+}
+
 export const CreatePostModal = ({
   open,
   onOpenChange,
-  onOpenEvent,
 }: CreatePostModalProps) => {
   const [postContent, setPostContent] = useState("");
   const [mode, setMode] = useState<Mode>("default");
-  const [images, setImages] = useState<File[]>([]);
-  const [videos, setVideos] = useState<File[]>([]);
+  const [images, setImages] = useState<FileWithPreview[]>([]);
+  const [videos, setVideos] = useState<FileWithPreview[]>([]);
   const [pollOptions, setPollOptions] = useState<string[]>([""]);
 
   const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setImages([...images, ...Array.from(e.target.files)]);
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        ...file,
+        preview: URL.createObjectURL(file)
+      }));
+      setImages([...images, ...newFiles]);
     }
   };
 
   const handleAddVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setVideos([...videos, ...Array.from(e.target.files)]);
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        ...file,
+        preview: URL.createObjectURL(file)
+      }));
+      setVideos([...videos, ...newFiles]);
     }
   };
 
   const handleAddPollOption = () => {
-    setPollOptions([...pollOptions, ""]);
+    if (pollOptions.length < 4) { // Limit to 4 options
+      setPollOptions([...pollOptions, ""]);
+    }
   };
 
   const handlePollOptionChange = (index: number, value: string) => {
@@ -74,8 +87,19 @@ export const CreatePostModal = ({
     setPollOptions([""]);
   };
 
+  // Clean up object URLs
+  const revokeObjectUrls = () => {
+    images.forEach(image => image.preview && URL.revokeObjectURL(image.preview));
+    videos.forEach(video => video.preview && URL.revokeObjectURL(video.preview));
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      if (!open) {
+        revokeObjectUrls();
+      }
+      onOpenChange(open);
+    }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-0 rounded-lg">
         <DialogHeader className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -84,8 +108,12 @@ export const CreatePostModal = ({
             </DialogTitle>
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                revokeObjectUrls();
+                onOpenChange(false);
+              }}
               className="text-gray-400 hover:text-gray-600"
+              aria-label="Close modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -95,7 +123,7 @@ export const CreatePostModal = ({
         <div className="px-6 py-4">
           <div className="flex items-start gap-4 mb-4">
             <Avatar className="w-12 h-12">
-              <AvatarImage src="/placeholder.svg" />
+              <AvatarImage src="/placeholder.svg" alt="User avatar" />
               <AvatarFallback className="bg-purple-100 text-purple-600">
                 JD
               </AvatarFallback>
@@ -118,6 +146,7 @@ export const CreatePostModal = ({
                   : "What's on your mind..."
               }
               className="w-full min-h-[120px] p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              aria-label="Post content"
             />
 
             {mode === "default" && (
@@ -127,17 +156,31 @@ export const CreatePostModal = ({
                     {images.map((file, index) => (
                       <div
                         key={`image-${index}`}
-                        className="w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center text-xs"
+                        className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center text-xs"
                       >
-                        {file.name}
+                        {file.type.startsWith('image/') && file.preview ? (
+                          <img 
+                            src={file.preview} 
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          file.name
+                        )}
                       </div>
                     ))}
                     {videos.map((file, index) => (
                       <div
                         key={`video-${index}`}
-                        className="w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center text-xs"
+                        className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center text-xs"
                       >
-                        {file.name}
+                        {file.type.startsWith('video/') ? (
+                          <video className="w-full h-full object-cover">
+                            <source src={file.preview} type={file.type} />
+                          </video>
+                        ) : (
+                          file.name
+                        )}
                       </div>
                     ))}
                   </div>
@@ -154,6 +197,7 @@ export const CreatePostModal = ({
                         accept="image/*"
                         onChange={handleAddImage}
                         className="hidden"
+                        aria-label="Upload images"
                       />
                     </label>
 
@@ -166,6 +210,7 @@ export const CreatePostModal = ({
                         accept="video/*"
                         onChange={handleAddVideo}
                         className="hidden"
+                        aria-label="Upload videos"
                       />
                     </label>
 
@@ -173,6 +218,7 @@ export const CreatePostModal = ({
                       type="button"
                       onClick={handlePollClick}
                       className="flex items-center gap-2 text-gray-600 hover:text-purple-600"
+                      aria-label="Create poll"
                     >
                       <BarChart2 className="w-5 h-5" />
                       <span className="text-sm">Poll</span>
@@ -185,16 +231,32 @@ export const CreatePostModal = ({
             {mode === "poll" && (
               <div className="space-y-2">
                 {pollOptions.map((option, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    value={option}
-                    onChange={(e) =>
-                      handlePollOptionChange(index, e.target.value)
-                    }
-                    placeholder={`Option ${index + 1}`}
-                    className="w-full p-2 border border-gray-200 rounded"
-                  />
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={option}
+                      onChange={(e) =>
+                        handlePollOptionChange(index, e.target.value)
+                      }
+                      placeholder={`Option ${index + 1}`}
+                      className="flex-1 p-2 border border-gray-200 rounded"
+                      aria-label={`Poll option ${index + 1}`}
+                    />
+                    {pollOptions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...pollOptions];
+                          updated.splice(index, 1);
+                          setPollOptions(updated);
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                        aria-label={`Remove option ${index + 1}`}
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 <div className="flex items-center gap-2">
                   <Button
@@ -202,6 +264,7 @@ export const CreatePostModal = ({
                     onClick={handleAddPollOption}
                     className="text-sm"
                     variant="outline"
+                    disabled={pollOptions.length >= 4}
                   >
                     Add Option
                   </Button>
@@ -223,7 +286,7 @@ export const CreatePostModal = ({
                   <span className="text-sm text-gray-600">Visibility:</span>
                   <Select defaultValue="private">
                     <SelectTrigger className="w-28 h-8 border border-gray-300 bg-white shadow-sm">
-                      <SelectValue />
+                      <SelectValue placeholder="Select visibility" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border border-gray-300 shadow-md">
                       <SelectItem value="private">Private</SelectItem>
@@ -237,7 +300,7 @@ export const CreatePostModal = ({
                   <span className="text-sm text-gray-600">Post On:</span>
                   <Select defaultValue="abc-community">
                     <SelectTrigger className="w-48 h-8 border border-gray-300 bg-white shadow-sm">
-                      <SelectValue />
+                      <SelectValue placeholder="Select destination" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border border-gray-300 shadow-md">
                       <SelectItem value="abc-community">
@@ -250,7 +313,7 @@ export const CreatePostModal = ({
               </div>
 
               <Button
-                disabled={!postContent.trim()}
+                disabled={!postContent.trim() || (mode === "poll" && pollOptions.some(opt => !opt.trim()))}
                 className="bg-purple-700 hover:bg-purple-700 text-white px-6 rounded-full"
               >
                 {mode === "poll" ? "Post Poll" : "Post"}
