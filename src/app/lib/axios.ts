@@ -29,8 +29,6 @@ const api = axios.create({
     },
 });
 
-// Utility function to wait
-
 // Request Interceptor : adds the access token to every request
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
@@ -61,6 +59,15 @@ api.interceptors.response.use(
             _retryCount?: number;
         };
 
+        // console.log("=== INTERCEPTOR DEBUG ===");
+        // console.log("Error status:", error.response?.status);
+        // console.log("Original request exists:", !!originalRequest);
+        // console.log("Original request URL:", originalRequest?.url);
+        // console.log("Already retried?", originalRequest?._retry);
+        // console.log("Is refresh endpoint?", originalRequest?.url?.endsWith("/auth/refresh-token"));
+        // console.log("Is login endpoint?", originalRequest?.url?.endsWith("/auth/login"));
+        // console.log("========================");
+
         if (!originalRequest) {
             return Promise.reject(error);
         }
@@ -88,7 +95,9 @@ api.interceptors.response.use(
 
                     // Create a separate axios instance for refresh to avoid interceptor loops
                     const refreshAxios = axios.create({
-                        baseURL: process.env.NEXT_PUBLIC_API_URL,
+                        baseURL: process.env.NODE_ENV === "production"
+                            ? process.env.NEXT_PUBLIC_API_URL
+                            : "http://localhost:4000/api/v1",
                         withCredentials: true,
                     });
 
@@ -96,6 +105,12 @@ api.interceptors.response.use(
                         "/auth/refresh-token",
                         {},
                     );
+
+                    if (!data?.data?.accessToken) {
+                        throw new Error('Invalid refresh response format');
+                    }
+
+
                     const { accessToken } = data.data;
 
                     // Set the new token with expiry information
@@ -177,5 +192,6 @@ api.interceptors.response.use(
         return Promise.reject(error);
     },
 );
+
 
 export default api;

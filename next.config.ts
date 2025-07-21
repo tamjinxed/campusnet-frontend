@@ -7,6 +7,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Skip TypeScript errors during build
   },
+  images: {
+    remotePatterns: [new URL('https://upload.wikimedia.org/**')],
+  },
 };
 
 module.exports = nextConfig;

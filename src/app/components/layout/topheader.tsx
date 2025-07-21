@@ -13,12 +13,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import {Button} from "@/app/components/ui/button";
+import { useAuth } from "@/app/context/AuthContext";
 
 export function TopHeader() {
   const pathname = usePathname();
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const { logout } = useAuth();
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -139,6 +143,14 @@ export function TopHeader() {
               >
                 <MessageSquare className="w-5 h-5" />
               </Link>
+              <div className="pt-4">
+                <Button
+                    onClick={logout}
+                    className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg"
+                >
+                  Logout
+                </Button>
+              </div>
 
               {/* More dropdown - Fixed to use absolute positioning */}
               <div className="relative">

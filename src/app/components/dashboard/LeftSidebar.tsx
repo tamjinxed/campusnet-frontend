@@ -7,6 +7,9 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import Link from "next/link";
 
+import {useAuth} from "@/app/context/AuthContext";
+import Image from "next/image";
+
 interface SidebarItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -15,6 +18,8 @@ interface SidebarItem {
 
 export function LeftSidebar() {
   const pathname = usePathname();
+
+  let { user } = useAuth();
 
   const sidebarItems: SidebarItem[] = [
     { icon: Users, label: "Groups", href: "/groups" },
@@ -32,17 +37,18 @@ export function LeftSidebar() {
       <Card className="rounded-lg shadow-sm">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <Avatar className="w-20 h-20 mb-4">
-            <AvatarImage src="/placeholder-user.jpg" />
-            <AvatarFallback className="bg-purple-100 text-purple-600 text-2xl">JD</AvatarFallback>
+            <AvatarImage src={user.profilePicture} />
+            <AvatarFallback className="bg-purple-100 text-purple-600 text-2xl">{`${user.firstName[0]}${user.lastName[0]}`}</AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-bold mb-1">John Doe</h2>
+          {/*<h2 className="text-xl font-bold mb-1">{`${user.firstName} ${user.lastName}`}</h2>*/}
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Badge
               variant="outline"
               className="rounded-full px-2 py-1 flex items-center space-x-1"
             >
-              <span role="img" aria-label="university" className="text-yellow-600 text-lg">🎓</span>
-              <span>ABCD University, Bangladesh</span>
+              {user.universityLogoUrl && <img src={user.universityLogoUrl} alt="University Logo" className="w-5 h-5" />}
+              {!user.universityLogoUrl && <span role="img" aria-label="university" className="text-yellow-600 text-lg">🎓</span>}
+              <span>{user.universityName}</span>
             </Badge>
           </div>
         </CardContent>

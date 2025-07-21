@@ -47,11 +47,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const verifyUser = useCallback(async () => {
         try {
             // If no valid token, then return
-            if (!hasValidToken()) {
-                setUser(null);
-                setError(null);
-                return;
-            }
+
+            // if (!hasValidToken()) {
+            //     setUser(null);
+            //     setError(null);
+            //     return;
+            // }
 
             // If user has valid token, then get user data
             const { data } = await api.get("/users/me");
@@ -89,27 +90,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
     }, [verifyUser]);
 
-    // Listen for storage changes (token updates from other tabs)
-    useEffect(() => {
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === "access_token") {
-                console.log("Token updated in another tab");
-
-                verifyUser();
-            }
-        };
-
-        if (typeof window !== "undefined") {
-            window.addEventListener("storage", handleStorageChange);
-            return () =>
-                window.removeEventListener("storage", handleStorageChange);
-        }
-    }, [verifyUser]);
 
     // Initialize auth state
     useEffect(() => {
         const initializeAuth = async () => {
+            // Show loading modal until user is verified or some error shown
             setIsLoading(true);
+
             await verifyUser();
             setIsLoading(false);
             setIsInitialized(true);
@@ -141,10 +128,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             setIsLoading(true);
             setError(null);
+
+            // Retrieve data on successful login
             const { data } = await api.post("/auth/login", credentials);
+            const message = data.message;
             const { accessToken, user: userData } = data.data;
+
+            // Set those data on the temporary memory
             setAccessToken(accessToken);
             setUser(userData);
+
+            console.log(userData);
             router.push("/dashboard");
         } catch (err: any) {
             const status = err.response?.status;

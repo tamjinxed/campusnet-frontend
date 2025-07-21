@@ -184,13 +184,6 @@ const Login = () => {
                                     </div>
                                 </form>
                                 <div className="pt-2 text-center">
-    <Button
-        asChild
-        variant="outline"
-        className="w-full h-12 text-campus-purple font-semibold border-campus-purple hover:bg-campus-purple/10"
-    >
-        <Link href="/dashboard">Preview Dashboard </Link>
-    </Button>
 </div>
 
                             </CardContent>
