@@ -15,6 +15,7 @@ const generateRequestId = () => Math.random().toString(36).substring(2, 15);
 // State management for refresh logic
 let isRefreshing = false;
 let failedRequestQueue: FailedRequestQueueItem[] = [];
+let hasRefreshFailed = false;
 
 // Axios Instance
 const api = axios.create({
@@ -59,15 +60,6 @@ api.interceptors.response.use(
             _retryCount?: number;
         };
 
-        // console.log("=== INTERCEPTOR DEBUG ===");
-        // console.log("Error status:", error.response?.status);
-        // console.log("Original request exists:", !!originalRequest);
-        // console.log("Original request URL:", originalRequest?.url);
-        // console.log("Already retried?", originalRequest?._retry);
-        // console.log("Is refresh endpoint?", originalRequest?.url?.endsWith("/auth/refresh-token"));
-        // console.log("Is login endpoint?", originalRequest?.url?.endsWith("/auth/login"));
-        // console.log("========================");
-
         if (!originalRequest) {
             return Promise.reject(error);
         }
@@ -82,16 +74,15 @@ api.interceptors.response.use(
             error.response?.status === 401 &&
             !originalRequest._retry &&
             !isRefreshTokenEndpoint &&
-            !isLoginEndpoint
+            !isLoginEndpoint &&
+            !hasRefreshFailed
         ) {
             if (!isRefreshing) {
                 isRefreshing = true;
                 originalRequest._retry = true;
 
                 try {
-                    console.log(
-                        "Access token expired or invalid. Attempting refresh...",
-                    );
+                    console.log("Access token expired or invalid. Attempting refresh...");
 
                     // Create a separate axios instance for refresh to avoid interceptor loops
                     const refreshAxios = axios.create({
@@ -102,8 +93,7 @@ api.interceptors.response.use(
                     });
 
                     const { data } = await refreshAxios.post(
-                        "/auth/refresh-token",
-                        {},
+                        "/auth/refresh-token"
                     );
 
                     if (!data?.data?.accessToken) {
@@ -133,6 +123,9 @@ api.interceptors.response.use(
                 } catch (refreshError) {
                     console.error("Token refresh failed:", refreshError);
 
+                    // Mark refresh as failed to prevent further attempts
+                    hasRefreshFailed = true;
+
                     // Handle rate limiting on refresh endpoint
                     if (refreshError.response?.status === 429) {
                         console.log(
@@ -149,18 +142,15 @@ api.interceptors.response.use(
                     // Clear the token and redirect to login
                     removeToken();
 
-                    // Redirect to login page (client-side only)
-                    if (typeof window !== "undefined") {
-                        // Add a small delay to prevent immediate redirect during multiple failed requests
-                        setTimeout(() => {
-                            window.location.href = "/login";
-                        }, 100);
-                    }
-
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
                 }
+            }
+
+            // If refresh has failed, don't queue requests - just reject them
+            if (hasRefreshFailed) {
+                return Promise.reject(new Error('Token refresh has failed. Please login again.'));
             }
 
             // If a refresh is already in progress, queue the failed request
@@ -181,17 +171,31 @@ api.interceptors.response.use(
         }
 
         // Handle other error types
-        if (error.response?.status === 403) {
+        if (error.response?.status === 401 && hasRefreshFailed) {
+            return Promise.reject(new Error('Authentication failed. Please login again.'));
+        }
+
+        if (error.response?.status === 400 && hasRefreshFailed) {
+            return Promise.reject(new Error("Invalid refresh token."))
+        }
+
+        if (error.response?.status === 403 && hasRefreshFailed) {
             console.error(
                 "Access forbidden. User may not have required permissions.",
             );
-        } else if (error.response?.status === 500) {
+        } else if (error.response?.status === 500 && hasRefreshFailed) {
             console.error("Server error. Please try again later.");
         }
 
         return Promise.reject(error);
     },
 );
+
+export const resetRefreshState = () => {
+    hasRefreshFailed = false;
+    isRefreshing = false;
+    failedRequestQueue = [];
+};
 
 
 export default api;

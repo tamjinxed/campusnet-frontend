@@ -8,7 +8,7 @@ import React, {
     ReactNode,
     useCallback,
 } from "react";
-import api from "../lib/axios";
+import api, { resetRefreshState } from "../lib/axios";
 import {
     setAccessToken,
     removeToken,
@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const verifyUser = useCallback(async () => {
         try {
             // If no valid token, then return
-
             // if (!hasValidToken()) {
             //     setUser(null);
             //     setError(null);
@@ -129,6 +128,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(true);
             setError(null);
 
+            // Reset the axios state before attempting login
+            resetRefreshState();
+
             // Retrieve data on successful login
             const { data } = await api.post("/auth/login", credentials);
             const message = data.message;
@@ -157,6 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             setIsLoading(true);
             await api.post("/auth/logout");
+
         } catch (err: any) {
             if (err.response?.status !== 429)
                 console.error("Logout error:", err);
@@ -165,6 +168,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             removeToken();
             setError(null);
             setIsLoading(false);
+
+            // Reset refresh state on logout
+            resetRefreshState();
+
             router.push("/login");
         }
     };

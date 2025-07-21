@@ -20,7 +20,6 @@ import { LeftSidebar } from "@/app/components/dashboard/LeftSidebar";
 import { useAuth } from "../context/AuthContext";
 import ProtectedRoutes from "@/app/components/ProtectedRoutes";
 import api from "@/app/lib/axios";
-import { SelectItem } from "@/app/components/ui/select";
 import { Button } from "@/app/components/ui/button";
 
 function DashboardPage() {
