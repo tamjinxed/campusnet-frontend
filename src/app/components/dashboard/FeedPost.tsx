@@ -40,32 +40,32 @@ const FeedPost = ({ post, onPostUpdate }) => {
 
   // Like/Unlike functionality
   const handleLike = async () => {
-    if (isLiking) return;
-
-    setIsLiking(true);
-    const previousState = {isLiked, likeCount};
-
-    try {
-      // Optimistic update
-      setIsLiked(!isLiked);
-      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-
-
-
-      // Notify parent component if needed
-      onPostUpdate?.(post.id, {
-        isLiked: !isLiked,
-        like_count: isLiked ? likeCount - 1 : likeCount + 1
-      });
-
-    } catch (error) {
-      // Revert on error
-      setIsLiked(previousState.isLiked);
-      setLikeCount(previousState.likeCount);
-      console.error("Failed to update like:", error);
-    } finally {
-      setIsLiking(false);
-    }
+    // if (isLiking) return;
+    //
+    // setIsLiking(true);
+    // const previousState = {isLiked, likeCount};
+    //
+    // try {
+    //   // Optimistic update
+    //   setIsLiked(!isLiked);
+    //   setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    //
+    //
+    //
+    //   // Notify parent component if needed
+    //   onPostUpdate?.(post.id, {
+    //     isLiked: !isLiked,
+    //     like_count: isLiked ? likeCount - 1 : likeCount + 1
+    //   });
+    //
+    // } catch (error) {
+    //   // Revert on error
+    //   setIsLiked(previousState.isLiked);
+    //   setLikeCount(previousState.likeCount);
+    //   console.error("Failed to update like:", error);
+    // } finally {
+    //   setIsLiking(false);
+    // }
 
   };
 
