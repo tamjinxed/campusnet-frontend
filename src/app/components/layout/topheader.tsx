@@ -1,4 +1,3 @@
-// app/components/TopHeader.tsx
 'use client';
 
 import Link from 'next/link';
@@ -13,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import {Button} from "@/app/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 
 export function TopHeader() {
@@ -21,17 +20,24 @@ export function TopHeader() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const { logout } = useAuth();
+  const { logout, user } = useAuth() || {}; // Safely destructure auth context
+
+  // Mark component as mounted (client-side)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Handle scroll effect for header
   useEffect(() => {
+    if (!isClient) return;
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isClient]);
 
   // Helper function to determine if a link is active
   const isActive = (path: string) => pathname === path;
@@ -42,6 +48,12 @@ export function TopHeader() {
     setShowMobileSearch(false);
   }, [pathname]);
 
+  // Fallback avatar props
+  const avatarProps = {
+    src: user?.profilePicture || "/placeholder-user.jpg",
+    fallback: user?.name?.charAt(0) || "U",
+  };
+
   return (
     <header className={`bg-white border-b border-gray-200 sticky top-0 z-50 transition-shadow ${isScrolled ? 'shadow-sm' : ''}`}>
       <div className="max-w-7xl mx-auto relative">
@@ -50,7 +62,7 @@ export function TopHeader() {
           {/* Left section - Logo and search (desktop) */}
           <div className="flex items-center space-x-4">
             {/* CampusNet Logo - Links to Dashboard */}
-            <Link href="/dashboard" className="text-xl campus-gradient-texty hover:opacity-80 transition-opacity">
+            <Link href="/dashboard" className="text-xl campus-gradient-text hover:opacity-80 transition-opacity">
               CampusNet
             </Link>
             
@@ -88,7 +100,7 @@ export function TopHeader() {
             <button 
               onClick={() => {
                 setShowMobileSearch(!showMobileSearch);
-                if (showMobileMenu) setShowMobileMenu(false); // Close menu if search is opened
+                setShowMobileMenu(false);
               }}
               className="p-2 rounded-full hover:bg-gray-100"
               aria-label="Toggle Search"
@@ -99,16 +111,18 @@ export function TopHeader() {
             {/* Always visible profile avatar on mobile */}
             <Link href="/profile" className="p-1">
               <Avatar className="w-7 h-7 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback className="bg-purple-100 text-purple-600">P</AvatarFallback>
+                <AvatarImage src={avatarProps.src} />
+                <AvatarFallback className="bg-purple-100 text-purple-600">
+                  {avatarProps.fallback}
+                </AvatarFallback>
               </Avatar>
             </Link>
             
-            {/* Mobile menu button (for additional items) */}
+            {/* Mobile menu button */}
             <button 
               onClick={() => {
                 setShowMobileMenu(!showMobileMenu);
-                if (showMobileSearch) setShowMobileSearch(false); // Close search if menu is opened
+                setShowMobileSearch(false);
               }}
               className="p-2 rounded-full hover:bg-gray-100"
               aria-label="Toggle Menu"
@@ -118,96 +132,99 @@ export function TopHeader() {
           </div>
           
           {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <nav className="flex space-x-4">
-              <Link 
-                href="/dashboard" 
-                className={`p-2 rounded-full ${isActive('/dashboard') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
-                title="Feed"
-              >
-                <Home className="w-5 h-5" />
-              </Link>
-              
-              <Link 
-                href="/notifications" 
-                className={`p-2 rounded-full ${isActive('/notifications') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
-                title="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-              </Link>
-              
-              <Link 
-                href="/messages" 
-                className={`p-2 rounded-full ${isActive('/messages') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
-                title="Messages"
-              >
-                <MessageSquare className="w-5 h-5" />
-              </Link>
-              <div className="pt-4">
-                <Button
-                    onClick={logout}
-                    className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg"
+          {isClient && ( // Only render on client-side
+            <div className="hidden md:flex items-center space-x-4">
+              <nav className="flex space-x-4">
+                <Link 
+                  href="/dashboard" 
+                  className={`p-2 rounded-full ${isActive('/dashboard') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                  title="Feed"
                 >
-                  Logout
-                </Button>
-              </div>
+                  <Home className="w-5 h-5" />
+                </Link>
+                
+                <Link 
+                  href="/notifications" 
+                  className={`p-2 rounded-full ${isActive('/notifications') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                </Link>
+                
+                <Link 
+                  href="/messages" 
+                  className={`p-2 rounded-full ${isActive('/messages') ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                  title="Messages"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </Link>
 
-              {/* More dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button 
-                    className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
-                    title="More"
-                  >
-                    <ChevronDown className="w-5 h-5" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-48 mt-2 z-50" // Removed absolute positioning as it's usually handled by `align` and `sideOffset`
-                  sideOffset={8}
-                >
-                  <DropdownMenuItem asChild>
-                    <Link href="/groups" className="flex items-center">
-                      <Users className="w-4 h-4 mr-2" />
-                      <span>Groups</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/events" className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>Events</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/saved" className="flex items-center">
-                      <Bookmark className="w-4 h-4 mr-2" />
-                      <span>Saved Items</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/calendar" className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>Calendar</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/connections" className="flex items-center">
-                      <LinkIcon className="w-4 h-4 mr-2" />
-                      <span>Connections</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </nav>
-            
-            <Link href="/profile">
-              <Avatar className="w-8 h-8 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback className="bg-purple-100 text-purple-600">P</AvatarFallback>
-              </Avatar>
-            </Link>
-          </div>
+                {logout && (
+                  <div className="pt-4">
+                    <Button
+                      onClick={logout}
+                      className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg"
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                )}
+
+                {/* More dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button 
+                      className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+                      title="More"
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 mt-2 z-50" sideOffset={8}>
+                    <DropdownMenuItem asChild>
+                      <Link href="/groups" className="flex items-center">
+                        <Users className="w-4 h-4 mr-2" />
+                        <span>Groups</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/events" className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>Events</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/saved" className="flex items-center">
+                        <Bookmark className="w-4 h-4 mr-2" />
+                        <span>Saved Items</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/calendar" className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>Calendar</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/connections" className="flex items-center">
+                        <LinkIcon className="w-4 h-4 mr-2" />
+                        <span>Connections</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </nav>
+              
+              <Link href="/profile">
+                <Avatar className="w-8 h-8 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
+                  <AvatarImage src={avatarProps.src} />
+                  <AvatarFallback className="bg-purple-100 text-purple-600">
+                    {avatarProps.fallback}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile search bar */}
@@ -238,7 +255,6 @@ export function TopHeader() {
               
               <div className="border-t border-gray-200 my-2"></div>
 
-              {/* Removed redundant Notifications and Messages links */}
               <Link 
                 href="/groups" 
                 className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50"
