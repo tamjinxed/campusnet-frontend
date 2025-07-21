@@ -171,16 +171,16 @@ const FeedPost = ({ post, onPostUpdate }) => {
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t">
-            <Button
-                variant="ghost"
-                size="sm"
-                className={`flex items-center space-x-2 ${isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}
-                onClick={handleLike}
-                disabled={isLiking}
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-              <span>{isLiked ? 'Liked' : 'Like'}</span>
-            </Button>
+            {/*<Button*/}
+            {/*    variant="ghost"*/}
+            {/*    size="sm"*/}
+            {/*    className={`flex items-center space-x-2 ${isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}*/}
+            {/*    onClick={handleLike}*/}
+            {/*    disabled={isLiking}*/}
+            {/*>*/}
+            {/*  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />*/}
+            {/*  <span>{isLiked ? 'Liked' : 'Like'}</span>*/}
+            {/*</Button>*/}
 
             <Button
                 variant="ghost"
