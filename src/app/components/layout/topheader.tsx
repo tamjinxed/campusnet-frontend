@@ -36,7 +36,7 @@ export function TopHeader() {
   // Helper function to determine if a link is active
   const isActive = (path: string) => pathname === path;
 
-  // Close mobile menu when route changes
+  // Close mobile menu and search when route changes
   useEffect(() => {
     setShowMobileMenu(false);
     setShowMobileSearch(false);
@@ -88,10 +88,10 @@ export function TopHeader() {
             <button 
               onClick={() => {
                 setShowMobileSearch(!showMobileSearch);
-                if (showMobileMenu) setShowMobileMenu(false);
+                if (showMobileMenu) setShowMobileMenu(false); // Close menu if search is opened
               }}
               className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Search"
+              aria-label="Toggle Search"
             >
               {showMobileSearch ? <X className="w-5 h-5 text-gray-600" /> : <Search className="w-5 h-5 text-gray-600" />}
             </button>
@@ -104,14 +104,14 @@ export function TopHeader() {
               </Avatar>
             </Link>
             
-            {/* Mobile menu button (now only for additional items) */}
+            {/* Mobile menu button (for additional items) */}
             <button 
               onClick={() => {
                 setShowMobileMenu(!showMobileMenu);
-                if (showMobileSearch) setShowMobileSearch(false);
+                if (showMobileSearch) setShowMobileSearch(false); // Close search if menu is opened
               }}
               className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Menu"
+              aria-label="Toggle Menu"
             >
               {showMobileMenu ? <X className="w-5 h-5 text-gray-600" /> : <Menu className="w-5 h-5 text-gray-600" />}
             </button>
@@ -152,55 +152,53 @@ export function TopHeader() {
                 </Button>
               </div>
 
-              {/* More dropdown - Fixed to use absolute positioning */}
-              <div className="relative">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button 
-                      className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
-                      title="More"
-                    >
-                      <ChevronDown className="w-5 h-5" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-48 absolute right-0 mt-2 z-50"
-                    sideOffset={8}
+              {/* More dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+                    title="More"
                   >
-                    <DropdownMenuItem asChild>
-                      <Link href="/groups" className="flex items-center">
-                        <Users className="w-4 h-4 mr-2" />
-                        <span>Groups</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/events" className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>Events</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/saved" className="flex items-center">
-                        <Bookmark className="w-4 h-4 mr-2" />
-                        <span>Saved Items</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/calendar" className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>Calendar</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/connections" className="flex items-center">
-                        <LinkIcon className="w-4 h-4 mr-2" />
-                        <span>Connections</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                    <ChevronDown className="w-5 h-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-48 mt-2 z-50" // Removed absolute positioning as it's usually handled by `align` and `sideOffset`
+                  sideOffset={8}
+                >
+                  <DropdownMenuItem asChild>
+                    <Link href="/groups" className="flex items-center">
+                      <Users className="w-4 h-4 mr-2" />
+                      <span>Groups</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/events" className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>Events</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/saved" className="flex items-center">
+                      <Bookmark className="w-4 h-4 mr-2" />
+                      <span>Saved Items</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/calendar" className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>Calendar</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/connections" className="flex items-center">
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      <span>Connections</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
             
             <Link href="/profile">
@@ -226,7 +224,7 @@ export function TopHeader() {
           </div>
         )}
         
-        {/* Mobile menu - Fixed to use absolute positioning */}
+        {/* Mobile menu */}
         {showMobileMenu && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
             <nav className="flex flex-col px-4 py-2">
@@ -240,6 +238,7 @@ export function TopHeader() {
               
               <div className="border-t border-gray-200 my-2"></div>
 
+              {/* Removed redundant Notifications and Messages links */}
               <Link 
                 href="/groups" 
                 className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50"

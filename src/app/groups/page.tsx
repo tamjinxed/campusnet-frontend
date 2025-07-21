@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search, Users, Calendar, BookmarkCheck, Network, CalendarDays } from "lucide-react";
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
@@ -94,35 +95,41 @@ export default function GroupsPage() {
           {activeTab === "your-groups" && (
             <div className="space-y-4">
               {yourGroups.map((group, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                      <div className="w-full sm:w-24 h-24">
-                        <Image 
-                          src={group.image} 
-                          alt={group.name}
-                          width={96}
-                          height={96}
-                          className="w-full h-full rounded-lg object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg">{group.name}</h3>
-                            <p className="text-sm text-gray-600">{group.members}</p>
-                          </div>
-                          <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-                            View Posts
-                          </Button>
+                <Link 
+                  key={index} 
+                  href={`/groups/${encodeURIComponent(group.name.toLowerCase().replace(/\s+/g, "-"))}`}
+                  className="block"
+                >
+                  <Card className="hover:ring-2 hover:ring-purple-600 transition">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                        <div className="w-full sm:w-24 h-24">
+                          <Image 
+                            src={group.image} 
+                            alt={group.name}
+                            width={96}
+                            height={96}
+                            className="w-full h-full rounded-lg object-cover"
+                          />
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          {group.description}
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                            <div>
+                              <h3 className="font-semibold text-lg">{group.name}</h3>
+                              <p className="text-sm text-gray-600">{group.members}</p>
+                            </div>
+                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                              View Posts
+                            </Button>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {group.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}
@@ -132,35 +139,41 @@ export default function GroupsPage() {
             <h2 className="text-lg sm:text-xl font-semibold mb-4">Groups You May be Interested In</h2>
             <div className="space-y-4">
               {suggestedGroups.map((group, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                      <div className="w-full sm:w-24 h-24">
-                        <Image 
-                          src={group.image} 
-                          alt={group.name}
-                          width={96}
-                          height={96}
-                          className="w-full h-full rounded-lg object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg">{group.name}</h3>
-                            <p className="text-sm text-gray-600">{group.members}</p>
-                          </div>
-                          <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-                            Join
-                          </Button>
+                <Link 
+                  key={index} 
+                  href={`/groups/${encodeURIComponent(group.name.toLowerCase().replace(/\s+/g, "-"))}`}
+                  className="block"
+                >
+                  <Card className="hover:ring-2 hover:ring-purple-600 transition">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                        <div className="w-full sm:w-24 h-24">
+                          <Image 
+                            src={group.image} 
+                            alt={group.name}
+                            width={96}
+                            height={96}
+                            className="w-full h-full rounded-lg object-cover"
+                          />
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          {group.description}
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                            <div>
+                              <h3 className="font-semibold text-lg">{group.name}</h3>
+                              <p className="text-sm text-gray-600">{group.members}</p>
+                            </div>
+                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                              Join
+                            </Button>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {group.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>

@@ -38,7 +38,7 @@ const FeedPost = ({ post }) => {
                 {post.images.map((image, index) => (
                     <img
                         key={image}
-                        src="https://ystvgbzmyeoqbghbhooq.supabase.co/storage/v1/object/images/images/27872ef2-3fac-4b5a-8d28-7298f8be263a/cat-1753058137599.png"
+                        src={image}
                         alt="Uploaded image"
                         className="w-full h-48 object-cover"
                     />
