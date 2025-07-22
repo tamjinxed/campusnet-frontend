@@ -8,7 +8,7 @@ import React, {
     ReactNode,
     useCallback,
 } from "react";
-import api, { resetRefreshState } from "../lib/axios";
+import api from "../lib/axios";
 import {
     setAccessToken,
     removeToken,
@@ -128,9 +128,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(true);
             setError(null);
 
-            // Reset the axios state before attempting login
-            resetRefreshState();
-
             // Retrieve data on successful login
             const { data } = await api.post("/auth/login", credentials);
             const message = data.message;
@@ -140,7 +137,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setAccessToken(accessToken);
             setUser(userData);
 
-            console.log(userData);
             router.push("/dashboard");
         } catch (err: any) {
             const status = err.response?.status;
@@ -168,9 +164,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             removeToken();
             setError(null);
             setIsLoading(false);
-
-            // Reset refresh state on logout
-            resetRefreshState();
 
             router.push("/login");
         }

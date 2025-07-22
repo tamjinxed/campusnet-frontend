@@ -6,7 +6,7 @@ import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
 import timeCalc from "@/app/utils/timeCalc";
 import { useAuth } from "@/app/context/AuthContext";
-import {useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import api from "@/app/lib/axios";
 import {Dialog, DialogContent, DialogTitle} from "@radix-ui/react-dialog";
 import {DialogHeader} from "@/app/components/ui/dialog";
@@ -18,9 +18,26 @@ const FeedPost = ({ post, onPostUpdate }) => {
 
   // State for Liked, like, comment counts and isLiking  animation
   const [reactions, setReactions] = useState(post.reactions);
-  const [likeCount, setLikeCount] = useState(post.like_count);
-  const [commentCount, setCommentCount] = useState(post.comment_count);
+  const [likeCount, setLikeCount] = useState(post.reactionCount);
+  const [userReaction, setUserReaction] = useState(null);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
   const [isLiking, setIsLiking] = useState(false);
+
+  // Find the initial reaction based on props
+  const initialUserReaction = useMemo(() => {
+    if (!user?.userId || !post.reactions?.length) return null;
+    return post.reactions.find(reaction => reaction.userId === user.userId) || null;
+  }, [post.reactions, user?.userId]);
+
+  const [isLiked, setIsLiked] = useState(!!initialUserReaction);
+
+  // Derive userReaction and isLiked from reactions and user
+  useEffect(() => {
+    if (!user?.userId || !reactions?.length) setUserReaction(null);
+    const findReaction = reactions.find(reaction => reaction.userId === user.userId) || null;
+    setUserReaction(findReaction);
+    setIsLiked(!!findReaction);
+  }, []);
 
   // Comment modal state
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
@@ -40,33 +57,50 @@ const FeedPost = ({ post, onPostUpdate }) => {
 
   // Like/Unlike functionality
   const handleLike = async () => {
-    // if (isLiking) return;
-    //
-    // setIsLiking(true);
-    // const previousState = {isLiked, likeCount};
-    //
-    // try {
-    //   // Optimistic update
-    //   setIsLiked(!isLiked);
-    //   setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    //
-    //
-    //
-    //   // Notify parent component if needed
-    //   onPostUpdate?.(post.id, {
-    //     isLiked: !isLiked,
-    //     like_count: isLiked ? likeCount - 1 : likeCount + 1
-    //   });
-    //
-    // } catch (error) {
-    //   // Revert on error
-    //   setIsLiked(previousState.isLiked);
-    //   setLikeCount(previousState.likeCount);
-    //   console.error("Failed to update like:", error);
-    // } finally {
-    //   setIsLiking(false);
-    // }
+    if (isLiking) return;
 
+    setIsLiking(true);
+    const previousState = {
+      prevReactions: [...reactions],
+      likeCount
+    };
+
+    try {
+      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+
+      if (isLiked) {
+        const {data: {data}} = await api.delete(API_ENDPOINTS.LIKE + `/${userReaction.id}`);
+
+        setReactions(prevReactions => prevReactions.filter(reaction => reaction.id !== data.reaction.id));
+        setUserReaction(null);
+        setIsLiked(false);
+      } else {
+        const { data: { data } } = await api.post(API_ENDPOINTS.LIKE, {
+          reactionType: 'like'
+        });
+
+        setUserReaction(data.reaction);
+        setIsLiked(true);
+        setReactions(prevReactions => {
+          return [...prevReactions, data.reaction];
+        });
+      }
+
+      // Notify parent component if needed
+      onPostUpdate?.(post.id, {
+        isLiked: !isLiked,
+        like_count: isLiked ? likeCount - 1 : likeCount + 1
+      });
+
+    } catch (error) {
+      // Revert on error
+      //setIsLiked(previousState.isLiked);
+      setLikeCount(previousState.likeCount);
+      setReactions(previousState.prevReactions);
+      console.error("Failed to update like:", error);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
     // Load comments when modal opens
@@ -171,16 +205,16 @@ const FeedPost = ({ post, onPostUpdate }) => {
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t">
-            {/*<Button*/}
-            {/*    variant="ghost"*/}
-            {/*    size="sm"*/}
-            {/*    className={`flex items-center space-x-2 ${isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}*/}
-            {/*    onClick={handleLike}*/}
-            {/*    disabled={isLiking}*/}
-            {/*>*/}
-            {/*  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />*/}
-            {/*  <span>{isLiked ? 'Liked' : 'Like'}</span>*/}
-            {/*</Button>*/}
+            <Button
+                variant="ghost"
+                size="sm"
+                className={`flex items-center space-x-2 ${isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}
+                onClick={handleLike}
+                disabled={isLiking}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              <span>{isLiked ? 'Liked' : 'Like'}</span>
+            </Button>
 
             <Button
                 variant="ghost"
