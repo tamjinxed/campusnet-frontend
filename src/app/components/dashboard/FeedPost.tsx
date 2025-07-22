@@ -33,7 +33,7 @@ const FeedPost = ({ post, onPostUpdate }) => {
   // Derive userReaction and isLiked from reactions and user
   useEffect(() => {
     if (!user?.userId || !reactions?.length) setUserReaction(null);
-    const findReaction = reactions?.find(reaction => reaction.userId === user.userId) || null;
+    const findReaction = reactions.find(reaction => reaction.userId === user.userId) || null;
     setUserReaction(findReaction);
     setIsReacted(!!findReaction);
   }, []);
