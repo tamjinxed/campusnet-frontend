@@ -16,11 +16,10 @@ import {Textarea} from "@/app/components/ui/textarea";
 const FeedPost = ({ post, onPostUpdate }) => {
   const { user } = useAuth();
 
-  // State for Liked, like, comment counts and isLiking  animation
+  // State for reaction, like and isLiking  animation
   const [reactions, setReactions] = useState(post.reactions);
-  const [likeCount, setLikeCount] = useState(post.reactionCount);
+  const [reactionCount, setReactionCount] = useState(post.reactionCount);
   const [userReaction, setUserReaction] = useState(null);
-  const [commentCount, setCommentCount] = useState(post.commentCount);
   const [isLiking, setIsLiking] = useState(false);
 
   // Find the initial reaction based on props
@@ -29,19 +28,20 @@ const FeedPost = ({ post, onPostUpdate }) => {
     return post.reactions.find(reaction => reaction.userId === user.userId) || null;
   }, [post.reactions, user?.userId]);
 
-  const [isLiked, setIsLiked] = useState(!!initialUserReaction);
+  const [isReacted, setIsReacted] = useState(!!initialUserReaction);
 
   // Derive userReaction and isLiked from reactions and user
   useEffect(() => {
     if (!user?.userId || !reactions?.length) setUserReaction(null);
     const findReaction = reactions.find(reaction => reaction.userId === user.userId) || null;
     setUserReaction(findReaction);
-    setIsLiked(!!findReaction);
+    setIsReacted(!!findReaction);
   }, []);
 
   // Comment modal state
+  const [commentCount, setCommentCount] = useState(post.commentCount);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<Comment[]>(post.comments || []);
   const [newComment, setNewComment] = useState("");
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -59,28 +59,35 @@ const FeedPost = ({ post, onPostUpdate }) => {
   const handleLike = async () => {
     if (isLiking) return;
 
+    // For animation and disabling button set isLiking true
     setIsLiking(true);
+
+    // Store previous state for rollback
     const previousState = {
+      isLiked: isReacted,
       prevReactions: [...reactions],
-      likeCount
+      likeCount: reactionCount
     };
 
     try {
-      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+      // Change reaction count
+      setReactionCount(prev => isReacted ? prev - 1 : prev + 1);
 
-      if (isLiked) {
+      // If user already reacted, delete reaction
+      // Else add reaction
+      if (isReacted) {
         const {data: {data}} = await api.delete(API_ENDPOINTS.LIKE + `/${userReaction.id}`);
 
         setReactions(prevReactions => prevReactions.filter(reaction => reaction.id !== data.reaction.id));
         setUserReaction(null);
-        setIsLiked(false);
+        setIsReacted(false);
       } else {
         const { data: { data } } = await api.post(API_ENDPOINTS.LIKE, {
           reactionType: 'like'
         });
 
         setUserReaction(data.reaction);
-        setIsLiked(true);
+        setIsReacted(true);
         setReactions(prevReactions => {
           return [...prevReactions, data.reaction];
         });
@@ -88,14 +95,14 @@ const FeedPost = ({ post, onPostUpdate }) => {
 
       // Notify parent component if needed
       onPostUpdate?.(post.id, {
-        isLiked: !isLiked,
-        like_count: isLiked ? likeCount - 1 : likeCount + 1
+        isLiked: !isReacted,
+        like_count: isReacted ? reactionCount - 1 : reactionCount + 1
       });
 
     } catch (error) {
       // Revert on error
-      //setIsLiked(previousState.isLiked);
-      setLikeCount(previousState.likeCount);
+      setIsReacted(previousState.isLiked);
+      setReactionCount(previousState.likeCount);
       setReactions(previousState.prevReactions);
       console.error("Failed to update like:", error);
     } finally {
@@ -131,11 +138,11 @@ const FeedPost = ({ post, onPostUpdate }) => {
 
       setIsSubmittingComment(true);
       try {
-        const response = await api.post(API_ENDPOINTS.COMMENTS, {
+        const { data : { data } } = await api.post(API_ENDPOINTS.COMMENTS, {
           content: newComment.trim()
         });
 
-        const newCommentData = response.data.data.comment;
+        const newCommentData = data.comment;
         setComments(prev => [newCommentData, ...prev]);
         setCommentCount(prev => prev + 1);
         setNewComment("");
@@ -196,7 +203,7 @@ const FeedPost = ({ post, onPostUpdate }) => {
           <div className="flex items-center justify-between pl-1 pr-1 mb-1">
 
             <div className="bottom-2 left-2 text-gray-900 text-sm">
-              {likeCount} likes
+              {reactionCount} likes
             </div>
             <div className="bottom-2 right-2 text-gray-900 text-sm">
               {commentCount} comments
@@ -208,12 +215,12 @@ const FeedPost = ({ post, onPostUpdate }) => {
             <Button
                 variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 ${isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}
+                className={`flex items-center space-x-2 ${isReacted ? 'text-red-600' : 'text-gray-600'} hover:text-red-600`}
                 onClick={handleLike}
                 disabled={isLiking}
             >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-              <span>{isLiked ? 'Liked' : 'Like'}</span>
+              <Heart className={`w-4 h-4 ${isReacted ? 'fill-current' : ''}`} />
+              <span>{isReacted ? 'Liked' : 'Like'}</span>
             </Button>
 
             <Button
@@ -258,14 +265,14 @@ const FeedPost = ({ post, onPostUpdate }) => {
               comments.map((comment) => (
                   <div key={comment.id} className="flex items-start space-x-3">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={comment.authorProfilePicture} />
+                      <AvatarImage src={comment.profilePicture} />
                       <AvatarFallback className="bg-purple-100 text-purple-600 text-xs">
-                        {comment.authorFirstName[0]}{comment.authorLastName[0]}
+                        {comment?.firstName[0]}{comment?.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 bg-gray-50 rounded-lg p-3">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-semibold text-sm">{comment.authorFirstName} {comment.authorLastName}</span>
+                        <span className="font-semibold text-sm">{comment?.firstName} {comment?.lastName}</span>
                         <span className="text-xs text-gray-500">{timeCalc(comment.createdAt)}</span>
                       </div>
                       <p className="text-sm text-gray-700">{comment.content}</p>
