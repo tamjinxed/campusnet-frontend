@@ -25,7 +25,7 @@ const FeedPost = ({ post, onPostUpdate }) => {
   // Find the initial reaction based on props
   const initialUserReaction = useMemo(() => {
     if (!user?.userId || !post.reactions?.length) return null;
-    return post.reactions.find(reaction => reaction.userId === user.userId) || null;
+    return post.reactions?.find(reaction => reaction.userId === user.userId) || null;
   }, [post.reactions, user?.userId]);
 
   const [isReacted, setIsReacted] = useState(!!initialUserReaction);
@@ -33,7 +33,7 @@ const FeedPost = ({ post, onPostUpdate }) => {
   // Derive userReaction and isLiked from reactions and user
   useEffect(() => {
     if (!user?.userId || !reactions?.length) setUserReaction(null);
-    const findReaction = reactions.find(reaction => reaction.userId === user.userId) || null;
+    const findReaction = reactions?.find(reaction => reaction.userId === user.userId) || null;
     setUserReaction(findReaction);
     setIsReacted(!!findReaction);
   }, []);
