@@ -25,7 +25,7 @@ const FeedPost = ({ post, onPostUpdate }) => {
   // Find the initial reaction based on props
   const initialUserReaction = useMemo(() => {
     if (!user?.userId || !post.reactions?.length) return null;
-    return post.reactions?.find(reaction => reaction.userId === user.userId) || null;
+    return post.reactions.find(reaction => reaction.userId === user.userId) || null;
   }, [post.reactions, user?.userId]);
 
   const [isReacted, setIsReacted] = useState(!!initialUserReaction);
