@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { X, Upload, User } from "lucide-react";
+import {X, Upload, User, Loader2} from "lucide-react";
 import Image from "next/image";
 import {
   Dialog,
@@ -12,6 +12,9 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Checkbox } from "@/app/components/ui/checkbox";
+import api from "@/app/lib/axios";
+import {supabaseAdmin} from "@/app/lib/supabase";
+import {useAuth} from "@/app/context/AuthContext";
 
 interface CreateGroupModalProps {
   open: boolean;
@@ -19,33 +22,122 @@ interface CreateGroupModalProps {
 }
 
 export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) => {
+  const { user } = useAuth();
+
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [rules, setRules] = useState("");
-  const [welcomeNote, setWelcomeNote] = useState("");
-  const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [university, setUniversity] = useState("");
+  const [coverPhoto, setCoverPhoto] = useState<File | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [newMemberApprovalRequired, setNewMemberApprovalRequired] = useState(true);
+  const [newPostApprovalRequired, setNewPostApprovalRequired] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const coverPhotoRef = useRef<HTMLInputElement>(null);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
 
+  const handleModalClose = (open) => {
+    if (!open) {
+      setGroupName("");
+      setDescription("");
+      setRules("");
+      setCoverPhoto(null);
+      setProfilePhoto(null);
+      setNewMemberApprovalRequired(true);
+      setNewPostApprovalRequired(true);
+    }
+    onOpenChange(open);
+  }
+
+  const handleSubmit = async () => {
+    if (!groupName.trim() && !profilePhoto) {
+      return;
+    }
+
+    setIsUploading(true);
+
+    const allImages = [coverPhoto, profilePhoto];
+    const uploadedImageUrls: string[] = [];
+
+    try {
+      await Promise.all(
+       allImages.map(async (image) => {
+         const { data : signedUrlData } = await api.post("/upload/signed-url", {
+           fileName: image?.name,
+           fileType: image?.type,
+         });
+
+         const { signedUrl, path } = signedUrlData.data;
+
+         await fetch(signedUrl, {
+           method: "PUT",
+           headers: { "Content-Type": image.type },
+           body: image,
+         });
+
+         const { data: publicUrlData } = supabaseAdmin.storage
+             .from("images")
+             .getPublicUrl(path);
+         uploadedImageUrls.push(publicUrlData.publicUrl);
+       })
+      );
+
+      const groupPostData = {
+        name: groupName,
+        description: description,
+        rules: rules,
+        coverImage: uploadedImageUrls[0],
+        logo: uploadedImageUrls[1],
+        memberApprovalRequired: newMemberApprovalRequired,
+        postApprovalRequired: newPostApprovalRequired,
+      }
+
+      const { data: { data : { communities } } } = await api.get("/communities/my");
+
+      await api.post(`/communities/${communities.id}/groups`, groupPostData);
+
+      handleModalClose(false);
+    } catch (err) {
+      console.error("Failed to create group:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (
+        file.type !== "image/png" &&
+        file.type !== "image/jpeg" &&
+        file.type !== "image/gif" &&
+        file.type !== "image/jpg"
+    ) {
+      console.log("Invalid file type: " + file.type);
+    }
+
     if (file) {
-      setCoverPhoto(URL.createObjectURL(file));
+      setCoverPhoto(file);
     }
   };
 
   const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (
+        file.type !== "image/png" &&
+        file.type !== "image/jpeg" &&
+        file.type !== "image/gif" &&
+        file.type !== "image/jpg"
+    ) {
+      console.log("Invalid file type: " + file.type);
+    }
+
     if (file) {
-      setProfilePhoto(URL.createObjectURL(file));
+      setProfilePhoto(file);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-white rounded-lg border border-gray-200 shadow-xl">
         <DialogHeader className="px-6 py-4 border-b border-gray-200 bg-white rounded-t-lg">
           <div className="flex items-center justify-between">
@@ -68,7 +160,7 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
                 />
                 {coverPhoto ? (
                   <Image
-                    src={coverPhoto}
+                    src={URL.createObjectURL(coverPhoto)}
                     alt="Cover"
                     fill
                     className="object-cover"
@@ -98,7 +190,7 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
               >
                 {profilePhoto ? (
                   <Image
-                    src={profilePhoto}
+                    src={URL.createObjectURL(profilePhoto)}
                     alt="Profile"
                     width={80}
                     height={80}
@@ -153,18 +245,6 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
               />
             </div>
 
-            {/* Editable Community Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Community</label>
-              <Input
-                type="text"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                placeholder="ABC University Community"
-                className="w-full border-gray-300 focus:border-purple-500 focus:ring-purple-500 placeholder:text-gray-400"
-              />
-            </div>
-
             {/* Privacy Settings */}
             <div className="space-y-3">
               <label className="text-sm font-medium">Privacy</label>
@@ -172,7 +252,8 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="allow-members"
-                    defaultChecked
+                    checked={newMemberApprovalRequired}
+                    onChange={() => setNewMemberApprovalRequired(pastMemberApproval => !pastMemberApproval)}
                     className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
                   />
                   <label htmlFor="allow-members" className="text-sm">
@@ -182,6 +263,8 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="allow-users"
+                    checked={newPostApprovalRequired}
+                    onChange={() => setNewPostApprovalRequired(pastPostApproval => !pastPostApproval)}
                     className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
                   />
                   <label htmlFor="allow-users" className="text-sm">
@@ -191,19 +274,22 @@ export const CreateGroupModal = ({ open, onOpenChange }: CreateGroupModalProps) 
               </div>
             </div>
 
-            {/* Welcome Note */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Welcome Note</label>
-              <Textarea
-                value={welcomeNote}
-                onChange={(e) => setWelcomeNote(e.target.value)}
-                placeholder="Write a welcome message for new members"
-                className="w-full min-h-[100px] resize-none border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-              />
-            </div>
+            {/*/!* Welcome Note *!/*/}
+            {/*<div className="space-y-2">*/}
+            {/*  <label className="text-sm font-medium">Welcome Note</label>*/}
+            {/*  <Textarea*/}
+            {/*    value={welcomeNote}*/}
+            {/*    onChange={(e) => setWelcomeNote(e.target.value)}*/}
+            {/*    placeholder="Write a welcome message for new members"*/}
+            {/*    className="w-full min-h-[100px] resize-none border-gray-300 focus:border-purple-500 focus:ring-purple-500"*/}
+            {/*  />*/}
+            {/*</div>*/}
 
-            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md">
-              Create Group
+            <Button onClick={handleSubmit} className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md">
+              {isUploading ? (
+                  <Loader2 className="w-5 h-5 mr-2 -ml-1 animate-spin" />
+              ) : null}
+              {isUploading ? "Creating Group" : "Create Group"}
             </Button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Heart, MessageSquare, Share, MoreHorizontal, Camera, Image as ImageIcon, Users, Settings, Shield, UserPlus, UserMinus, ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
@@ -13,6 +13,10 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { TopHeader } from "@/app/components/layout/topheader";
 import { LeftSidebar } from "@/app/components/dashboard/LeftSidebar";
 import { CreatePostModal } from "@/app/components/modals/CreatePostModal";
+import api from "@/app/lib/axios";
+import {useAuth} from "@/app/context/AuthContext";
+import FeedPost from "@/app/components/dashboard/FeedPost";
+import {toUpperCase} from "uri-js/dist/esnext/util";
 
 // Define interfaces
 interface Group {
@@ -43,82 +47,91 @@ interface Post {
   isPinned?: boolean;
 }
 
-// Mock data
-const mockGroup: Group = {
-  id: "1",
-  name: "ABC University Community",
-  description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-  memberCount: 753,
-  coverImage: "https://images.unsplash.com/photo-1549451371-64aa98a6f0c2?w=800&h=300&fit=crop",
-  isAdmin: true
-};
-
-const mockMembers: Member[] = [
-  {
-    id: "1",
-    name: "Ben den Engelsen",
-    role: "ADMIN",
-    avatar: "/placeholder.svg",
-    bio: "Student at AICD University, Bangladesh"
-  },
-  {
-    id: "2",
-    name: "John Doe",
-    role: "MEMBER",
-    avatar: "/placeholder.svg",
-    bio: "Student at AICD University, Bangladesh"
-  },
-  {
-    id: "3",
-    name: "Jane Smith",
-    role: "MEMBER",
-    avatar: "/placeholder.svg",
-    bio: "Professor at AICD University"
+// eslint-disable-next-line @next/next/no-async-client-component
+const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
+  const numericStringToUuid = (numericString) => {
+    // Insert hyphens at the standard UUID positions: 8, 13, 18, 23
+    return (
+        numericString.substring(0, 8) + '-' +
+        numericString.substring(8, 12) + '-' +
+        numericString.substring(12, 16) + '-' +
+        numericString.substring(16, 20) + '-' +
+        numericString.substring(20, 32)
+    );
   }
-];
 
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    author: mockMembers[1],
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    images: ["https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop"],
-    likes: 100,
-    comments: 5,
-    timestamp: "5 min",
-    isPinned: true
-  },
-  {
-    id: 2,
-    author: mockMembers[2],
-    content: "Just shared some photos from our last university event! Check them out!",
-    images: [
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=300&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=300&fit=crop"
-    ],
-    likes: 45,
-    comments: 12,
-    timestamp: "2 hours"
-  },
-  {
-    id: 3,
-    author: mockMembers[0],
-    content: "Important announcement about upcoming exams...",
-    likes: 78,
-    comments: 23,
-    timestamp: "1 day",
-    isPinned: true
+  let { groupId } = React.use(params);
+  groupId = numericStringToUuid(groupId);
+  const { user } = useAuth();
+
+
+  // Storing group info, member info, admins and moderators and group posts
+  const [group, setGroup] = useState<[]>([]);
+  const [members, setMembers] = useState<[]>([]);
+  const [generatlMembers, setGeneralMembers] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const [moderators, setModerators] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [pinnedPosts, setPinnedPosts] = useState([]);
+
+  const [membershipStatus, setMembershipStatus] = useState("joined"); // "join", "joined", "leave"
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    getGroupInfo();
+    getGroupMembers();
+    getGroupPosts();
+
+    const currentUserIsMember = members?.filter(memeber => member.id === user.id).length > 0;
+    if (currentUserIsMember) {
+      setMembershipStatus("joined");
+    } else {
+      setMembershipStatus("join");
+    }
+
+    const currentUserIsAdmin = admins?.filter(admin => admin.id === user.id).length > 0;
+    if (currentUserIsAdmin) {
+      setIsAdmin(true);
+    }
+
+  }, []);
+
+  const getGroupInfo = async () => {
+    const { data: { data : groupInfo } } = await api.get(`/groups/${groupId}`);
+    setGroup(groupInfo.group);
   }
-];
 
-const SingleGroup = ({ params }: { params: { groupId: string } }) => {
+  const getGroupMembers = async () => {
+    const { data: { data : groupMembers } } = await api.get(`/groups/${groupId}/members?page=1&limit=50`);
+    setMembers(groupMembers.members);
+
+    // Filter general members, admins and moderators
+    const generalGroupMembers = groupMembers.members.filter(member => member.role === "member");
+    const adminGroupMembers = groupMembers.members.filter(member => member.role === "admin");
+    const moderatorGroupMembers = groupMembers.members.filter(member => member.role === "moderator");
+
+    setGeneralMembers(generalGroupMembers);
+    setAdmins(adminGroupMembers);
+    setModerators(moderatorGroupMembers);
+  }
+
+  const getGroupPosts = async () => {
+    const { data: { data : groupPosts } } = await api.get(`/posts?page=1&limit=50&groupId=${groupId}`);
+
+    // Filter posts
+    const filterPinnedPost = groupPosts.posts.filter(post => post.isPinned === true);
+
+    setPinnedPosts(filterPinnedPost);
+
+    setPosts(groupPosts.posts);
+  }
+
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("all");
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showAllAdmins, setShowAllAdmins] = useState(false);
   const [showAllMembers, setShowAllMembers] = useState(false);
   const [adminView, setAdminView] = useState(false);
-  const [membershipStatus, setMembershipStatus] = useState("joined"); // "join", "joined", "leave"
   const [createPostOpen, setCreatePostOpen] = useState(false);
 
   const handleJoinLeave = () => {
@@ -144,23 +157,6 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
     router.push(`/profile/${memberId}`);
   };
 
-  // Filter posts based on active tab
-  const filteredPosts = () => {
-    switch (activeTab) {
-      case "images":
-        return mockPosts.filter(post => post.images && post.images.length > 0);
-      case "posts":
-        return mockPosts.filter(post => !post.images || post.images.length === 0);
-      case "pinned":
-        return mockPosts.filter(post => post.isPinned);
-      default:
-        return mockPosts;
-    }
-  };
-
-  // Get admins and members
-  const admins = mockMembers.filter(member => member.role === "ADMIN");
-  const members = mockMembers.filter(member => member.role === "MEMBER");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -181,11 +177,12 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
               <Card>
                 <CardContent className="p-0">
                   <div className="relative">
-                    <img
-                      src={mockGroup.coverImage}
-                      alt={mockGroup.name}
-                      className="w-full h-48 md:h-64 object-cover rounded-t-lg"
-                    />
+                    {group.coverImage && <img
+                        src={group.coverImage}
+                        alt={group.name}
+                        className="w-full h-48 md:h-64 object-cover rounded-t-lg"
+                    />}
+                    {!group.coverImage && <div style={{"background": "radial-gradient(69.45% 69.45% at 89.46% 81.73%, rgb(100, 30, 12) 0%, rgb(80, 15, 57) 43.54%, rgb(6, 1, 65) 100%) center center"}} className="w-full h-48 md:h-64 bg-gray-100 rounded-t-lg"></div>}
                     <div className="absolute top-4 right-4">
                       <Button variant="ghost" size="icon" className="bg-white/20 hover:bg-white/30 text-white">
                         <MoreHorizontal className="w-4 h-4" />
@@ -196,11 +193,11 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
                   <div className="p-4 md:p-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
                       <div>
-                        <h1 className="text-xl md:text-2xl font-bold">{mockGroup.name}</h1>
-                        <p className="text-muted-foreground text-sm md:text-base">{mockGroup.memberCount} Members</p>
+                        <h1 className="text-xl md:text-2xl font-bold">{group.name}</h1>
+                        <p className="text-muted-foreground text-sm md:text-base">{group.memberCount} Members</p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {mockGroup.isAdmin && (
+                        {isAdmin && (
                           <Button
                             variant={adminView ? "default" : "outline"}
                             size="sm"
@@ -285,103 +282,8 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
               </Card>
 
               {/* Feed Posts */}
-              {filteredPosts().map((post) => (
-                <Card key={post.id} className="cursor-pointer" onClick={() => handlePostClick(post.id)}>
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-start justify-between mb-3 md:mb-4">
-                      <div className="flex items-center space-x-2 md:space-x-3">
-                        <Avatar className="w-8 h-8 md:w-10 md:h-10">
-                          <AvatarImage src={post.author.avatar} />
-                          <AvatarFallback className="bg-blue-100 text-blue-600">
-                            {post.author.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4 className="font-semibold text-sm md:text-base">{post.author.name}</h4>
-                          <p className="text-xs md:text-sm text-muted-foreground">{post.author.bio}</p>
-                          <p className="text-xs text-muted-foreground">{post.timestamp}</p>
-                          {post.isPinned && (
-                            <Badge variant="secondary" className="text-xs mt-1">PINNED</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Handle post options
-                        }}
-                        className="p-1 md:p-2"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    <div className="mb-3 md:mb-4">
-                      <p className="text-foreground text-sm md:text-base mb-3 md:mb-4">
-                        {post.content}
-                      </p>
-                      
-                      {post.images && post.images.length > 0 && (
-                        <div className={`grid gap-2 ${post.images.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-                          {post.images.map((image, idx) => (
-                            <div 
-                              key={idx}
-                              className="bg-gray-900 rounded-lg p-2 md:p-4 relative cursor-pointer hover:opacity-90"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageClick(image);
-                              }}
-                            >
-                              <img 
-                                src={image} 
-                                alt={`Post ${post.id} image ${idx}`} 
-                                className="w-full h-40 md:h-48 object-cover rounded opacity-80"
-                              />
-                              <div className="absolute bottom-2 left-2 text-white text-xs md:text-sm bg-black/50 px-1 md:px-2 py-0.5 md:py-1 rounded">
-                                {post.likes} Likes
-                              </div>
-                              <div className="absolute bottom-2 right-2 text-white text-xs md:text-sm bg-black/50 px-1 md:px-2 py-0.5 md:py-1 rounded">
-                                {post.comments} comments
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 md:pt-4 border-t">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex items-center space-x-1 md:space-x-2 text-blue-600 p-1 md:p-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Heart className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="text-xs md:text-sm">Like</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex items-center space-x-1 md:space-x-2 p-1 md:p-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MessageSquare className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="text-xs md:text-sm">Comment</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex items-center space-x-1 md:space-x-2 p-1 md:p-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Share className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="text-xs md:text-sm">Share</span>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+              {posts.map((post) => (
+                <FeedPost key={post.id} post={post} />
               ))}
             </div>
 
@@ -394,8 +296,8 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
                   <h3 className="font-semibold mb-2 md:mb-3">About this group</h3>
                   <p className="text-sm text-muted-foreground mb-3 md:mb-4">
                     {showFullDescription 
-                      ? mockGroup.description 
-                      : `${mockGroup.description.substring(0, 150)}...`}
+                      ? group.description
+                      : `${group.description?.substring(0, 150)}...`}
                   </p>
                   <Button 
                     variant="link" 
@@ -409,8 +311,8 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
               </Card>
 
               {/* Pending Posts */}
-              {(mockGroup.isAdmin && adminView) && (
-                <Card className="cursor-pointer" onClick={() => router.push(`/groups/${params.groupId}/pending/posts`)}>
+              {(isAdmin && adminView) && (
+                <Card className="cursor-pointer" onClick={() => router.push(`/groups/${groupId}/pending/posts`)}>
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center justify-between mb-2 md:mb-3">
                       <h3 className="font-semibold">Pending Posts</h3>
@@ -422,8 +324,8 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
               )}
 
               {/* Pending Requests */}
-              {(mockGroup.isAdmin && adminView) && (
-                <Card className="cursor-pointer" onClick={() => router.push(`/groups/${params.groupId}/pending/members`)}>
+              {(isAdmin && adminView) && (
+                <Card className="cursor-pointer" onClick={() => router.push(`/groups/${groupId}/member-requests`)}>
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center justify-between mb-2 md:mb-3">
                       <h3 className="font-semibold">Pending Requests</h3>
@@ -451,18 +353,18 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
                   <div className="space-y-3 md:space-y-4">
                     {(showAllAdmins ? admins : admins.slice(0, 2)).map((admin) => (
                       <div 
-                        key={admin.id} 
+                        key={admin.memberId}
                         className="flex items-center space-x-2 md:space-x-3 cursor-pointer hover:bg-muted/50 p-1 md:p-2 rounded"
-                        onClick={() => handleMemberClick(admin.id)}
+                        onClick={() => handleMemberClick(admin.memberId)}
                       >
                         <Avatar className="w-8 h-8 md:w-10 md:h-10">
-                          <AvatarImage src={admin.avatar} />
+                          <AvatarImage src={admin.profilePicture} />
                           <AvatarFallback className="bg-green-100 text-green-600">
-                            {admin.name.split(' ').map(n => n[0]).join('')}
+                            {admin.firstName[0]}{admin.lastName[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm">{admin.name}</h4>
+                          <h4 className="font-medium text-sm">{admin.firstName} {admin.lastName}</h4>
                           <p className="text-xs text-muted-foreground">{admin.bio}</p>
                           <Badge variant="outline" className="text-xs mt-1">ADMIN</Badge>
                         </div>
@@ -487,22 +389,22 @@ const SingleGroup = ({ params }: { params: { groupId: string } }) => {
                     </Button>
                   </div>
                   <div className="space-y-3 md:space-y-4">
-                    {(showAllMembers ? members : members.slice(0, 2)).map((member) => (
+                    {(showAllMembers ? members : generatlMembers.slice(0, 2)).map((member) => (
                       <div 
-                        key={member.id} 
+                        key={member.memberId}
                         className="flex items-center space-x-2 md:space-x-3 cursor-pointer hover:bg-muted/50 p-1 md:p-2 rounded"
-                        onClick={() => handleMemberClick(member.id)}
+                        onClick={() => handleMemberClick(member.memberId)}
                       >
                         <Avatar className="w-8 h-8 md:w-10 md:h-10">
-                          <AvatarImage src={member.avatar} />
+                          <AvatarImage src={member.profilePicture} />
                           <AvatarFallback className="bg-blue-100 text-blue-600">
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                            {member.firstName[0]}{member.lastName[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm">{member.name}</h4>
+                          <h4 className="font-medium text-sm">{member.firstName} {member.lastName}</h4>
                           <p className="text-xs text-muted-foreground">{member.bio}</p>
-                          <Badge variant="outline" className="text-xs mt-1">MEMBER</Badge>
+                          <Badge variant="outline" className="text-xs mt-1">{toUpperCase(member.role)}</Badge>
                         </div>
                       </div>
                     ))}

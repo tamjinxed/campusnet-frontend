@@ -1,3 +1,5 @@
+// @/app/context/AuthContext.tsx
+
 "use client";
 
 import React, {
@@ -8,163 +10,94 @@ import React, {
     ReactNode,
     useCallback,
 } from "react";
-import api from "../lib/axios";
-import {
-    setAccessToken,
-    removeToken,
-    hasValidToken,
-} from "../lib/token.service";
 import { useRouter } from "next/navigation";
+import api from "../lib/axios";
+import { setAccessToken, clearToken, hasToken } from "../lib/token.service";
+import { toast } from "react-hot-toast";
 
+// Interfaces
 interface LoginCredentials {
     email: string;
     password: string;
 }
 
 interface AuthState {
-    user: any;
+    user: object | null;
     isLoading: boolean;
-    error: string | null;
     isInitialized: boolean;
     login: (credentials: LoginCredentials) => Promise<void>;
-    logout: () => void;
-    clearError: () => void;
+    logout: () => Promise<void>;
     refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isInitialized, setIsInitialized] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [user, setUser] = useState<object | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false); // Tracks initial user load
     const router = useRouter();
 
-    const clearError = useCallback(() => setError(null), []);
-
-    // Verify user each time the component mounts
-    const verifyUser = useCallback(async () => {
-        try {
-            // If no valid token, then return
-            // if (!hasValidToken()) {
-            //     setUser(null);
-            //     setError(null);
-            //     return;
-            // }
-
-            // If user has valid token, then get user data
-            const { data } = await api.get("/users/me");
-            const serverUser = data.data.user;
-
-            setUser(serverUser);
-            setError(null);
-        } catch (error: any) {
-            handleVerificationError(error);
-        }
-    }, []);
-
-    // Handler for verification error
-    const handleVerificationError = useCallback((err: any) => {
-        const status = err.response?.status;
-        if (status === 429) {
-            setError("Too many requests. Please wait a moment.");
-        } else if (status === 401) {
+    const fetchUser = useCallback(async () => {
+        // Only fetch user if a token exists
+        if (!hasToken()) {
             setUser(null);
-            removeToken();
-            setError(null);
-        } else if (status >= 500) {
-            setError("Server error. Please try again later.");
-        } else {
-            setUser(null);
-            removeToken();
-            setError("Authentication failed. Please login again.");
+            setIsInitialized(true);
+            setIsLoading(false);
+            return;
         }
-    }, []);
 
-    // Refresh User Data
-    const refreshUserData = useCallback(async () => {
         setIsLoading(true);
-        await verifyUser();
-        setIsLoading(false);
-    }, [verifyUser]);
-
-
-    // Initialize auth state
-    useEffect(() => {
-        const initializeAuth = async () => {
-            // Show loading modal until user is verified or some error shown
-            setIsLoading(true);
-
-            await verifyUser();
+        try {
+            const { data } = await api.get("/users/me");
+            setUser(data.data.user);
+        } catch (error) {
+            // Error is handled by the interceptor, which will clear the token and redirect if needed.
+            // Here, we just ensure the local user state is cleared.
+            setUser(null);
+            console.error("Failed to fetch user:", error);
+        } finally {
             setIsLoading(false);
             setIsInitialized(true);
-        };
+        }
+    }, []);
 
-        initializeAuth();
-    }, [verifyUser]);
-
-    // Handle visibility state change
+    // Initial load: check for user
     useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (
-                document.visibilityState === "visible" &&
-                user &&
-                hasValidToken()
-            ) {
-                verifyUser();
-            }
-        };
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        return () =>
-            document.removeEventListener(
-                "visibilitychange",
-                handleVisibilityChange,
-            );
-    }, [user, verifyUser]);
+        fetchUser();
+    }, [fetchUser]);
 
     const login = async (credentials: LoginCredentials) => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-            setError(null);
-
-            // Retrieve data on successful login
             const { data } = await api.post("/auth/login", credentials);
-            const message = data.message;
             const { accessToken, user: userData } = data.data;
 
-            // Set those data on the temporary memory
             setAccessToken(accessToken);
             setUser(userData);
 
+            toast.success("Login successful!");
             router.push("/dashboard");
         } catch (err: any) {
-            const status = err.response?.status;
-            if (status === 429)
-                setError("Too many login attempts. Please wait.");
-            else if (status === 401) setError("Invalid email or password.");
-            else if (status >= 500) setError("Server error. Try again later.");
-            else setError("Login failed. Please check your credentials.");
-            throw err;
+            const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials.";
+            toast.error(errorMessage);
+            throw err; // Re-throw for form handling if needed
         } finally {
             setIsLoading(false);
         }
     };
 
     const logout = async () => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
             await api.post("/auth/logout");
-
-        } catch (err: any) {
-            if (err.response?.status !== 429)
-                console.error("Logout error:", err);
+        } catch (error) {
+            console.error("Logout failed on server, proceeding with client-side cleanup.", error);
         } finally {
+            clearToken();
             setUser(null);
-            removeToken();
-            setError(null);
             setIsLoading(false);
-
+            toast.success("You have been logged out.");
             router.push("/login");
         }
     };
@@ -174,12 +107,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             value={{
                 user,
                 isLoading,
-                error,
                 isInitialized,
                 login,
                 logout,
-                clearError,
-                refreshUserData,
+                refreshUserData: fetchUser,
             }}
         >
             {children}
@@ -189,7 +120,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = (): AuthState => {
     const context = useContext(AuthContext);
-    if (!context)
+    if (!context) {
         throw new Error("useAuth must be used within an AuthProvider");
+    }
     return context;
 };

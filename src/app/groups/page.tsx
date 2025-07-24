@@ -36,6 +36,12 @@ export default function GroupsPage() {
     setSuggestedGroups(suggestedGroups.groups);
   }
 
+
+  // Converts UUID to a numeric string
+  const uuidToNumericString = (uuid) => {
+    return uuid.replace(/-/g, ''); // Remove all hyphens globally
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Header */}
@@ -51,7 +57,7 @@ export default function GroupsPage() {
         <main className="flex-1 w-full md:w-auto space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex space-x-1 w-full sm:w-auto">
-              <button 
+              <button
                 onClick={() => setActiveTab("your-groups")}
                 className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base ${
                   activeTab === "your-groups" 
@@ -61,7 +67,7 @@ export default function GroupsPage() {
               >
                 Your Groups
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab("requested-groups")}
                 className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base ${
                   activeTab === "requested-groups" 
@@ -72,8 +78,8 @@ export default function GroupsPage() {
                 Requested Groups
               </button>
             </div>
-            
-            <Button 
+
+            <Button
               className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
               onClick={() => setIsCreateGroupModalOpen(true)}
             >
@@ -88,7 +94,7 @@ export default function GroupsPage() {
                   {userGroups?.map((group, index) => (
                       <Link
                           key={index}
-                          href={`/groups/${encodeURIComponent(group.name.toLowerCase().replace(/\s+/g, "-"))}`}
+                          href={`/groups/${encodeURIComponent(uuidToNumericString(group.id))}`}
                           className="block"
                       >
                         <Card className="hover:ring-2 hover:ring-purple-600 transition">
@@ -111,7 +117,7 @@ export default function GroupsPage() {
                                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                                   <div>
                                     <h3 className="font-semibold text-lg">{group.name}</h3>
-                                    <p className="text-sm text-gray-600">{group["member_count"]} {group["member_count"] === 1 ? "Member" : "Members"}</p>
+                                    <p className="text-sm text-gray-600">{group["memberCount"]} {group["memberCount"] === 1 ? "Member" : "Members"}</p>
                                   </div>
                                   <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
                                     View Posts
@@ -134,8 +140,8 @@ export default function GroupsPage() {
             <h2 className="text-lg sm:text-xl font-semibold mb-4">Groups You May be Interested In</h2>
             <div className="space-y-4">
               {suggestedGroups?.map((group, index) => (
-                <Link 
-                  key={index} 
+                <Link
+                  key={index}
                   href={`/groups/${encodeURIComponent(group.name.toLowerCase().replace(/\s+/g, "-"))}`}
                   className="block"
                 >
@@ -152,7 +158,7 @@ export default function GroupsPage() {
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                             <div>
                               <h3 className="font-semibold text-lg">{group.name}</h3>
-                              <p className="text-sm text-gray-600">{group["member_count"]} {group["member_count"] === 1 ? "Member" : "Members"}</p>
+                              <p className="text-sm text-gray-600">{group["memberCount"]} {group["memberCount"] === 1 ? "Member" : "Members"}</p>
                             </div>
                             <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
                               Join
@@ -173,9 +179,9 @@ export default function GroupsPage() {
       </div>
 
       {/* Create Group Modal */}
-      <CreateGroupModal 
-        open={isCreateGroupModalOpen} 
-        onOpenChange={setIsCreateGroupModalOpen} 
+      <CreateGroupModal
+        open={isCreateGroupModalOpen}
+        onOpenChange={setIsCreateGroupModalOpen}
       />
     </div>
   );
