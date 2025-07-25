@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
+import { User } from 'lucide-react';
 import { Separator } from '@/app/components/ui/separator';
 import { TopHeader } from '@/app/components/layout/topheader';
 import { CreatePostModal } from '@/app/components/modals/CreatePostModal';
