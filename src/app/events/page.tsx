@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -9,81 +9,29 @@ import { LeftSidebar } from "@/app/components/dashboard/LeftSidebar";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { Search, Calendar, MapPin, Users, Clock, Plus } from "lucide-react";
+import {Search, Calendar, MapPin, Users, Clock, Plus, Link2} from "lucide-react";
 
 import CreateEventModal from "@/app/components/modals/CreateEventModal";
+import api from "@/app/lib/axios";
+import {uuidToNumericString} from "@/app/utils/utils";
 
 const EventsPage = () => {
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
 
-  const yourEvents = [
-    {
-      id: 1,
-      title: "ABC CS FEST Hackathon 2025",
-      date: "Dec 15, 2024",
-      time: "9:00 AM",
-      location: "Engineering Building, Room 101",
-      organizer: "CS Student Club",
-      attendees: 45,
-      image: "/placeholder.svg",
-      status: "registered"
-    },
-    {
-      id: 2,
-      title: "Robotics Workshop",
-      date: "Dec 20, 2024",
-      time: "2:00 PM",
-      location: "Student Center, Main Hall",
-      organizer: "Robotics Club",
-      attendees: 78,
-      image: "/placeholder.svg",
-      status: "registered"
-    },
-    {
-      id: 3,
-      title: "Photography Exhibition",
-      date: "Dec 25, 2024",
-      time: "6:00 PM",
-      location: "Campus Auditorium",
-      organizer: "Photography Club",
-      attendees: 32,
-      image: "/placeholder.svg",
-      status: "registered"
-    }
-  ];
+  const [userEvents, setUserEvents] = useState([]);
+  const [suggestedEvents, setSuggestedEvents] = useState([]);
 
-  const upcomingEvents = [
-    {
-      id: 4,
-      title: "Tech Talk: AI Trends",
-      date: "Jan 5, 2025",
-      time: "10:00 AM",
-      location: "Computer Lab 2",
-      organizer: "Tech Society",
-      attendees: 23,
-      image: "/placeholder.svg"
-    },
-    {
-      id: 5,
-      title: "Debate Competition",
-      date: "Jan 8, 2025",
-      time: "3:00 PM",
-      location: "Library Conference Room",
-      organizer: "Debate Club",
-      attendees: 67,
-      image: "/placeholder.svg"
-    },
-    {
-      id: 6,
-      title: "Sports Tournament",
-      date: "Jan 12, 2025",
-      time: "7:00 PM",
-      location: "Campus Recreation Center",
-      organizer: "Athletics Club",
-      attendees: 89,
-      image: "/placeholder.svg"
-    }
-  ];
+  useEffect(() => {
+    getEvents();
+  }, []);
+
+  const getEvents = async () => {
+    const { data : { data } } = await api.get("/users/me/events");
+    setUserEvents(data.events);
+
+    const { data : { data: suggestedEvents } } = await api.get("/users/me/events/suggested");
+    setSuggestedEvents(suggestedEvents.events);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,30 +54,31 @@ const EventsPage = () => {
 
           {/* Event Creation */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-3 h-12 flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => setIsCreateEventModalOpen(true)}
-            >
-              <p className="text-gray-600 text-sm md:text-lg">Want to Organize an Event?</p>
+            <div className="flex-1 border border-gray-300 rounded-lg px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <p className="text-gray-700 text-sm md:text-base font-medium">
+                Want to organize an event?
+              </p>
+
+              <Button
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 md:px-6 h-10 text-sm"
+                  onClick={() => setIsCreateEventModalOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="hidden md:inline">Create Event</span>
+              </Button>
             </div>
-            <Button
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 md:px-8 h-12"
-              onClick={() => setIsCreateEventModalOpen(true)}
-            >
-              <Plus className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">Create Event</span>
-            </Button>
           </div>
+
 
           {/* Your Events */}
           <section className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Your Events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {yourEvents.map((event) => (
+              {userEvents.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
-                  isRegistered
+                  isRegistered={event.userStatus}
                   actionLabel="View Details"
                   actionVariant="outline"
                 />
@@ -141,10 +90,11 @@ const EventsPage = () => {
           <section className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Upcoming Events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {upcomingEvents.map((event) => (
+              {suggestedEvents.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
+                  isRegistered={undefined}
                   actionLabel="Join Event"
                   actionVariant="default"
                 />
@@ -164,7 +114,7 @@ const EventsPage = () => {
 
 const EventCard = ({
   event,
-  isRegistered = false,
+  isRegistered = undefined,
   actionLabel,
   actionVariant = "default"
 }: {
@@ -175,17 +125,23 @@ const EventCard = ({
     time: string;
     location: string;
     organizer: string;
-    attendees: number;
-    image: string;
+    attendeeCount: number;
+    communityName: string | null;
+    groupName: string | null;
+    userStatus: string;
+    coverImage: string;
+    description: string;
+    startDate: string;
+    endDate: string;
   };
-  isRegistered?: boolean;
+  isRegistered?: string | undefined;
   actionLabel: string;
   actionVariant?: "default" | "outline";
 }) => {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/events/${event.id}`);
+    router.push(`/events/${encodeURIComponent(uuidToNumericString(event.id))}`);
   };
 
   return (
@@ -195,7 +151,7 @@ const EventCard = ({
     >
       <div className="relative h-40 md:h-48">
         <Image
-          src={event.image}
+          src={event.coverImage || "#"}
           alt={event.title}
           fill
           className="object-cover rounded-t-lg"
@@ -203,20 +159,33 @@ const EventCard = ({
         />
         {isRegistered && (
           <Badge className="absolute top-2 right-2 md:top-4 md:right-4 bg-green-500 text-white text-xs md:text-sm">
-            Registered
+            {event.userStatus[0].toUpperCase() + event.userStatus.slice(1)}
           </Badge>
         )}
       </div>
       <CardHeader className="pb-3">
         <CardTitle className="text-base md:text-lg line-clamp-2">{event.title}</CardTitle>
-        <p className="text-xs md:text-sm text-purple-600 font-medium">by {event.organizer}</p>
+        <p className="text-xs md:text-sm text-purple-600 font-medium">by {event.groupName ? event.groupName : (event.communityName ? event.communityName : `${event.organizerFirstName} ${event.organizerLastName}`)}</p>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <div className="space-y-1 md:space-y-2 mb-3 md:mb-4">
-          <EventDetail icon={<Calendar className="w-3 h-3 md:w-4 md:h-4" />} text={event.date} />
-          <EventDetail icon={<Clock className="w-3 h-3 md:w-4 md:h-4" />} text={event.time} />
-          <EventDetail icon={<MapPin className="w-3 h-3 md:w-4 md:h-4" />} text={event.location} />
-          <EventDetail icon={<Users className="w-3 h-3 md:w-4 md:h-4" />} text={`${event.attendees} attending`} />
+          <EventDetail icon={<Calendar className="w-3 h-3 md:w-4 md:h-4" />} text={`${new Date(event.startDate).toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric'
+          })}`} />
+          <EventDetail icon={<Clock className="w-3 h-3 md:w-4 md:h-4" />} text={`${new Date(event.startDate).toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: 'numeric', 
+            hour12: true
+          })}`} />
+          {event.location && (
+              <EventDetail icon={<MapPin className="w-3 h-3 md:w-4 md:h-4" />} text={event.location} />
+          )}
+          {event.eventLink && (
+              <EventDetail icon={<Link2 className="w-3 h-3 md:w-4 md:h-4" />} text={event.eventLink} />
+          )}
+          <EventDetail icon={<Users className="w-3 h-3 md:w-4 md:h-4" />} text={`${event.attendeeCount} attending`} />
         </div>
         <Button
           variant={actionVariant}
@@ -236,7 +205,7 @@ const EventCard = ({
 const EventDetail = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
   <div className="flex items-center text-gray-600 text-xs md:text-sm">
     <span className="mr-1 md:mr-2">{icon}</span>
-    <span className="truncate">{text}</span>
+    <span>{text}</span>
   </div>
 );
 

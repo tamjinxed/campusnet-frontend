@@ -3,17 +3,15 @@
 
 import {useEffect, useState} from "react";
 import Link from "next/link";
-import { Search, Users, Calendar, BookmarkCheck, Network, CalendarDays } from "lucide-react";
-import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
-import Image from "next/image";
 import { CreateGroupModal } from "@/app/components/modals/CreateGroupModal";
 import { TopHeader } from '@/app/components/layout/topheader';
 import { LeftSidebar } from '@/app/components/dashboard/LeftSidebar';
 import {useAuth} from "@/app/context/AuthContext";
 import api from "@/app/lib/axios";
 import {Avatar, AvatarFallback, AvatarImage} from "@/app/components/ui/avatar";
+import {uuidToNumericString} from "@/app/utils/utils";
 
 export default function GroupsPage() {
   const { user } = useAuth();
@@ -36,11 +34,6 @@ export default function GroupsPage() {
     setSuggestedGroups(suggestedGroups.groups);
   }
 
-
-  // Converts UUID to a numeric string
-  const uuidToNumericString = (uuid) => {
-    return uuid.replace(/-/g, ''); // Remove all hyphens globally
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">

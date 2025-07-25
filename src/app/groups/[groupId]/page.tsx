@@ -17,6 +17,7 @@ import api from "@/app/lib/axios";
 import {useAuth} from "@/app/context/AuthContext";
 import FeedPost from "@/app/components/dashboard/FeedPost";
 import {toUpperCase} from "uri-js/dist/esnext/util";
+import {numericStringToUuid} from "@/app/utils/utils";
 
 // Define interfaces
 interface Group {
@@ -49,21 +50,11 @@ interface Post {
 
 // eslint-disable-next-line @next/next/no-async-client-component
 const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
-  const numericStringToUuid = (numericString) => {
-    // Insert hyphens at the standard UUID positions: 8, 13, 18, 23
-    return (
-        numericString.substring(0, 8) + '-' +
-        numericString.substring(8, 12) + '-' +
-        numericString.substring(12, 16) + '-' +
-        numericString.substring(16, 20) + '-' +
-        numericString.substring(20, 32)
-    );
-  }
+
 
   let { groupId } = React.use(params);
   groupId = numericStringToUuid(groupId);
   const { user } = useAuth();
-
 
   // Storing group info, member info, admins and moderators and group posts
   const [group, setGroup] = useState<[]>([]);
