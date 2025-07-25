@@ -3,8 +3,8 @@
 import { notFound } from 'next/navigation';
 import { Button } from '@/app/components/ui/button';
 import { TopHeader } from '@/app/components/layout/topheader';
-import ProfileHeader from '../../components/ProfileHeader';
-import ProfileActivity from '../../components/ProfileActivity';
+import ProfileHeader from '../components/ProfileHeader';
+import ProfileActivity from '../components/ProfileActivity';
 
 export default function UserProfilePage({ params }: { params: { userId: string } }) {
   // Fetch user data based on params.userId

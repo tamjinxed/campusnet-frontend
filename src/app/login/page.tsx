@@ -12,6 +12,8 @@ import {
     CardContent,
 } from "@/app/components/ui/card";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 // For Auth
 import { useAuth } from "../context/AuthContext";
@@ -21,7 +23,9 @@ const Login = () => {
         email: "",
         password: "",
     });
-
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const router = useRouter();
     const { login } = useAuth();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,14 +33,47 @@ const Login = () => {
             ...formData,
             [e.target.name]: e.target.value,
         });
+        // Clear error when user starts typing
+        if (error) setError("");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
+        setError("");
+        
         try {
-            await login(formData);
-        } catch (error) {
-            console.log(error);
+            const response = await login(formData);
+            if (response?.isNewUser) {
+                router.push("/profile/setup");
+            } else {
+                router.push("/dashboard");
+            }
+        } catch (err: any) {
+            console.error("Login error:", err);
+            let errorMessage = "Login failed. Please try again.";
+            
+            if (err.response) {
+                switch (err.response.status) {
+                    case 401:
+                        errorMessage = "Invalid email or password.";
+                        break;
+                    case 404:
+                        errorMessage = "Account not found. Please sign up.";
+                        break;
+                    case 500:
+                        errorMessage = "Server error. Please try again later.";
+                        break;
+                }
+            }
+            
+            setError(errorMessage);
+            // Shake animation on error
+            const form = e.currentTarget as HTMLFormElement;
+            form.classList.add("animate-shake");
+            setTimeout(() => form.classList.remove("animate-shake"), 500);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -49,38 +86,37 @@ const Login = () => {
                 <div className="hidden lg:flex lg:w-1/2 bg-campus-gradient relative overflow-hidden">
                     <div className="absolute inset-0 bg-black/20"></div>
 
-                    {/* Floating Elements Animation */}
+                    {/* New Floating Campus Animation */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative">
-                            {/* Main Circle */}
-                            <div className="w-96 h-96 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center animate-float">
-                                <div className="w-72 h-72 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                                    <div className="w-48 h-48 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
-                                        <div className="text-center text-white">
-                                            <h2 className="text-4xl font-bold mb-4 animate-pulse-gentle">
-                                                CampusNet
-                                            </h2>
-                                            <p className="text-xl opacity-90">
-                                                Connect. Learn. Grow.
-                                            </p>
-                                        </div>
-                                    </div>
+                        <div className="relative w-full h-full">
+                            {/* Floating buildings */}
+                            <div className="absolute bottom-0 left-1/4 w-16 h-32 bg-white/20 rounded-t-lg animate-float-slow"></div>
+                            <div className="absolute bottom-0 left-1/2 w-24 h-40 bg-white/25 rounded-t-lg animate-float"></div>
+                            <div className="absolute bottom-0 right-1/4 w-20 h-36 bg-white/30 rounded-t-lg animate-float-slower"></div>
+                            
+                            {/* Floating students */}
+                            <div className="absolute top-1/4 left-1/3 w-12 h-12">
+                                <div className="relative w-full h-full animate-float-delay-1">
+                                    <div className="absolute w-8 h-8 bg-white/30 rounded-full"></div>
+                                    <div className="absolute top-0 left-0 w-2 h-2 bg-white rounded-full"></div>
                                 </div>
                             </div>
-
-                            {/* Orbiting Elements */}
-                            <div
-                                className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-8 w-16 h-16 bg-white/20 rounded-full animate-float"
-                                style={{ animationDelay: "1s" }}
-                            ></div>
-                            <div
-                                className="absolute bottom-0 right-0 transform translate-x-8 translate-y-8 w-12 h-12 bg-white/20 rounded-full animate-float"
-                                style={{ animationDelay: "2s" }}
-                            ></div>
-                            <div
-                                className="absolute top-1/2 left-0 transform -translate-x-8 -translate-y-1/2 w-20 h-20 bg-white/20 rounded-full animate-float"
-                                style={{ animationDelay: "0.5s" }}
-                            ></div>
+                            <div className="absolute top-1/3 right-1/4 w-10 h-10">
+                                <div className="relative w-full h-full animate-float-delay-2">
+                                    <div className="absolute w-6 h-6 bg-white/25 rounded-full"></div>
+                                    <div className="absolute top-0 left-0 w-2 h-2 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            
+                            {/* Central logo */}
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                                <h2 className="text-5xl font-bold mb-4 text-white animate-pulse-gentle">
+                                    CampusNet
+                                </h2>
+                                <p className="text-xl text-white/90">
+                                    Connect. Learn. Grow.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -122,6 +158,12 @@ const Login = () => {
                                     onSubmit={handleSubmit}
                                     className="space-y-4"
                                 >
+                                    {error && (
+                                        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                                            {error}
+                                        </div>
+                                    )}
+                                    
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
                                         <Input
@@ -164,9 +206,17 @@ const Login = () => {
                                     <div className="pt-4">
                                         <Button
                                             type="submit"
-                                            className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg"
+                                            className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg transition-all"
+                                            disabled={loading}
                                         >
-                                            Login
+                                            {loading ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    Logging in...
+                                                </>
+                                            ) : (
+                                                "Login"
+                                            )}
                                         </Button>
                                     </div>
 
@@ -182,12 +232,8 @@ const Login = () => {
                                         </p>
                                     </div>
                                 </form>
-                                <div className="pt-2 text-center">
-</div>
-
                             </CardContent>
                         </Card>
-                        
                     </div>
                 </div>
             </div>

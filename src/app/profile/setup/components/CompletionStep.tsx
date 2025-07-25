@@ -27,7 +27,7 @@ export default function CompletionStep({ data, onNext }: CompletionStepProps) {
         </div>
       </div>
 
-      <Link href="/communities" legacyBehavior passHref>
+      <Link href="/profile" legacyBehavior passHref>
         <Button 
           onClick={onNext}
           className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold"
