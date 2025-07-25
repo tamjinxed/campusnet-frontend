@@ -19,10 +19,12 @@ import {Textarea} from "@/app/components/ui/textarea";
 
 import { TopHeader } from '@/app/components/layout/topheader';
 import { LeftSidebar } from '@/app/components/dashboard/LeftSidebar';
-import {numericStringToUuid} from "@/app/utils/utils";
+import {numericStringToUuid, uuidToNumericString} from "@/app/utils/utils";
 import {useAuth} from "@/app/context/AuthContext";
 import api from "@/app/lib/axios";
 import timeAgoSocialMedia from "@/app/utils/timeCalc";
+
+import {useRouter} from "next/navigation";
 
 // TypeScript interfaces
 interface EventComment {
@@ -84,6 +86,7 @@ export default function SingleEvent({ params }: { params: Promise<{ eventId: str
   let {eventId} = React.use(params);
   eventId = numericStringToUuid(eventId);
   const { user } = useAuth();
+  const router = useRouter();
 
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -398,12 +401,12 @@ export default function SingleEvent({ params }: { params: Promise<{ eventId: str
                                       <Avatar className="w-8 h-8">
                                         <AvatarImage src={comment.profilePicture} />
                                         <AvatarFallback className="bg-purple-100 text-purple-600 text-xs">
-                                          {comment?.firstName[0]}{comment?.lastName[0]}
+                                          {comment?.authorFirstName?.charAt(0)}{comment?.authorLastName?.charAt(0)}
                                         </AvatarFallback>
                                       </Avatar>
                                       <div className="flex-1 bg-gray-50 rounded-lg p-3">
                                         <div className="flex items-center space-x-2 mb-1">
-                                          <span className="font-semibold text-sm">{comment?.firstName} {comment?.lastName}</span>
+                                          <span className="font-semibold text-sm">{comment?.authorFirstName} {comment?.authorLastName}</span>
                                           <span className="text-xs text-gray-500">{timeAgoSocialMedia(comment.createdAt)}</span>
                                         </div>
                                         <p className="text-sm text-gray-700">{comment.content}</p>
@@ -608,6 +611,7 @@ export default function SingleEvent({ params }: { params: Promise<{ eventId: str
                       {suggestedEvents.map((event) => (
                           <div
                               key={event.id}
+                              onClick={() => router.push(`/events/${encodeURIComponent(uuidToNumericString(event.id))}`)}
                               className="border rounded-lg p-3 hover:bg-accent cursor-pointer"
                           >
                             <img

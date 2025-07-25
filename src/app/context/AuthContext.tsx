@@ -77,7 +77,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(userData);
 
             toast.success("Login successful!");
-            router.push("/dashboard");
+            setTimeout(() => {
+                router.push("/dashboard");
+            }, 3000);
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials.";
             toast.error(errorMessage);

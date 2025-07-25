@@ -16,7 +16,6 @@ import Link from "next/link";
 // For Auth
 import { useAuth } from "../context/AuthContext";
 
-
 const Login = () => {
     const [formData, setFormData] = useState({
         email: "",

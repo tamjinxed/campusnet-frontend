@@ -41,7 +41,7 @@ function DashboardPage() {
 
                 try {
                     const { data } = await api.get("/communities/my");
-                    const response = await api.get(`/posts`);
+                    const response = await api.get(`/posts/feed?sortBy=popular`);
                     setPosts(response.data.data.posts);
                 } catch (error) {
                     console.log(error);

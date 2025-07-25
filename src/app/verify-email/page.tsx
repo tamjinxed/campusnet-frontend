@@ -56,6 +56,10 @@ const VerifyEmail = () => {
         }
     }, [token, router]);
 
+    useEffect(() => {
+        if (verificationState.status === 'success') router.push('/dashboard');
+    }, [verificationState]);
+
     const handleResendEmail = async () => {
         if (!emailInput.trim()) {
             setResendMessage("Please enter your email address.");
@@ -137,7 +141,7 @@ const VerifyEmail = () => {
                                 Email Verified Successfully!
                             </h1>
                             <p className="text-gray-600 text-base">
-                                Redirecting you to complete your profile...
+                                Redirecting you to dashboard...
                             </p>
                         </div>
                     </>

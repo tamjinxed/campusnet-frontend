@@ -19,8 +19,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 };
 
 const api = axios.create({
-    baseURL: process.env.NODE_ENV === 'production'
-                ? process.env.NEXT_PUBLIC_API_URL : "http://localhost:4000/api/v1",
+    baseURL: process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_API_URL : "http://localhost:4000/api/v1",
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
