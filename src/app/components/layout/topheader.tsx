@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Home, Bell, MessageSquare, Menu, X, ChevronDown, Users, Calendar, Bookmark, Link as LinkIcon } from 'lucide-react';
+import { Search, Home, Bell, MessageSquare, Menu, X, ChevronDown, Users, Calendar, Bookmark, Link as LinkIcon, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { Input } from "@/app/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 import { useState, useEffect } from 'react';
@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { Button } from "@/app/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 
 export function TopHeader() {
@@ -22,14 +21,12 @@ export function TopHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const { logout, user } = useAuth() || {}; // Safely destructure auth context
+  const { logout, user } = useAuth() || {};
 
-  // Mark component as mounted (client-side)
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Handle scroll effect for header
   useEffect(() => {
     if (!isClient) return;
     const handleScroll = () => {
@@ -39,16 +36,13 @@ export function TopHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isClient]);
 
-  // Helper function to determine if a link is active
   const isActive = (path: string) => pathname === path;
 
-  // Close mobile menu and search when route changes
   useEffect(() => {
     setShowMobileMenu(false);
     setShowMobileSearch(false);
   }, [pathname]);
 
-  // Fallback avatar props
   const avatarProps = {
     src: user?.profilePicture || "/placeholder-user.jpg",
     fallback: user?.name?.charAt(0) || "U",
@@ -78,24 +72,6 @@ export function TopHeader() {
           
           {/* Mobile controls */}
           <div className="md:hidden flex items-center space-x-3">
-            {/* Always visible notification icon on mobile */}
-            <Link 
-              href="/notifications" 
-              className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
-              title="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-            </Link>
-            
-            {/* Always visible messages icon on mobile */}
-            <Link 
-              href="/messages" 
-              className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
-              title="Messages"
-            >
-              <MessageSquare className="w-5 h-5" />
-            </Link>
-            
             {/* Search toggle button */}
             <button 
               onClick={() => {
@@ -107,16 +83,6 @@ export function TopHeader() {
             >
               {showMobileSearch ? <X className="w-5 h-5 text-gray-600" /> : <Search className="w-5 h-5 text-gray-600" />}
             </button>
-            
-            {/* Always visible profile avatar on mobile */}
-            <Link href="/profile" className="p-1">
-              <Avatar className="w-7 h-7 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
-                <AvatarImage src={avatarProps.src} />
-                <AvatarFallback className="bg-purple-100 text-purple-600">
-                  {avatarProps.fallback}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
             
             {/* Mobile menu button */}
             <button 
@@ -132,7 +98,7 @@ export function TopHeader() {
           </div>
           
           {/* Desktop navigation */}
-          {isClient && ( // Only render on client-side
+          {isClient && (
             <div className="hidden md:flex items-center space-x-4">
               <nav className="flex space-x-4">
                 <Link 
@@ -159,17 +125,6 @@ export function TopHeader() {
                   <MessageSquare className="w-5 h-5" />
                 </Link>
 
-                {logout && (
-                  <div className="pt-4">
-                    <Button
-                      onClick={logout}
-                      className="w-full h-12 bg-campus-gradient hover:opacity-90 text-white font-semibold rounded-lg"
-                    >
-                      Logout
-                    </Button>
-                  </div>
-                )}
-
                 {/* More dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -180,32 +135,32 @@ export function TopHeader() {
                       <ChevronDown className="w-5 h-5" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 mt-2 z-50" sideOffset={8}>
-                    <DropdownMenuItem asChild>
+                  <DropdownMenuContent align="end" className="w-48 mt-2 z-50 bg-white" sideOffset={8}>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
                       <Link href="/groups" className="flex items-center">
                         <Users className="w-4 h-4 mr-2" />
                         <span>Groups</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
                       <Link href="/events" className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>Events</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
                       <Link href="/saved" className="flex items-center">
                         <Bookmark className="w-4 h-4 mr-2" />
                         <span>Saved Items</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
                       <Link href="/calendar" className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>Calendar</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
                       <Link href="/connections" className="flex items-center">
                         <LinkIcon className="w-4 h-4 mr-2" />
                         <span>Connections</span>
@@ -215,14 +170,42 @@ export function TopHeader() {
                 </DropdownMenu>
               </nav>
               
-              <Link href="/profile">
-                <Avatar className="w-8 h-8 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
-                  <AvatarImage src={avatarProps.src} />
-                  <AvatarFallback className="bg-purple-100 text-purple-600">
-                    {avatarProps.fallback}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
+              {/* Profile dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center space-x-1 focus:outline-none">
+                    <Avatar className="w-8 h-8 hover:ring-2 hover:ring-purple-300 transition-all cursor-pointer">
+                      <AvatarImage src={avatarProps.src} />
+                      <AvatarFallback className="bg-purple-100 text-purple-600">
+                        {avatarProps.fallback}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 mt-2 z-50 bg-white" sideOffset={8}>
+                  <DropdownMenuItem asChild className="hover:bg-gray-50">
+                    <Link href="/profile" className="flex items-center">
+                      <User className="w-4 h-4 mr-2" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="hover:bg-gray-50">
+                    <Link href="/dashboard" className="flex items-center">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {logout && (
+                    <DropdownMenuItem 
+                      className="hover:bg-gray-50 text-red-600"
+                      onClick={logout}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
@@ -253,8 +236,32 @@ export function TopHeader() {
                 <span className="font-medium">Feed</span>
               </Link>
               
+              <Link 
+                href="/notifications" 
+                className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/notifications') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                <Bell className="w-5 h-5" />
+                <span className="font-medium">Notifications</span>
+              </Link>
+              
+              <Link 
+                href="/messages" 
+                className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/messages') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span className="font-medium">Messages</span>
+              </Link>
+              
               <div className="border-t border-gray-200 my-2"></div>
 
+              <Link 
+                href="/profile" 
+                className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/profile') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                <User className="w-5 h-5" />
+                <span className="font-medium">Profile</span>
+              </Link>
+              
               <Link 
                 href="/groups" 
                 className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50"
@@ -279,21 +286,15 @@ export function TopHeader() {
                 <span className="font-medium">Saved Items</span>
               </Link>
               
-              <Link 
-                href="/calendar" 
-                className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                <Calendar className="w-5 h-5" />
-                <span className="font-medium">Calendar</span>
-              </Link>
-              
-              <Link 
-                href="/connections" 
-                className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                <LinkIcon className="w-5 h-5" />
-                <span className="font-medium">Connections</span>
-              </Link>
+              {logout && (
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 text-left w-full"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Logout</span>
+                </button>
+              )}
             </nav>
           </div>
         )}
