@@ -205,32 +205,37 @@ export default function EditProfilePage() {
                     </div>
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem 
-                    onClick={() => profilePhotoRef.current?.click()}
-                    disabled={isUploadingProfile}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Profile Photo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => window.open(profileData.avatar, '_blank')}
-                    disabled={!profileData.avatar}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Profile Photo
-                  </DropdownMenuItem>
-                  {profileData.avatar && (
-                    <DropdownMenuItem 
-                      onClick={removeProfilePhoto} 
-                      className="text-red-500"
-                      disabled={isUploadingProfile}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Photo
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
+                <DropdownMenuContent 
+  align="start" 
+  className="w-48 bg-white border border-gray-200 rounded-md shadow-lg"
+>
+  <DropdownMenuItem 
+    onClick={() => profilePhotoRef.current?.click()}
+    disabled={isUploadingProfile}
+    className="hover:bg-gray-100 focus:bg-gray-100"
+  >
+    <Edit className="w-4 h-4 mr-2" />
+    Edit Profile Photo
+  </DropdownMenuItem>
+  <DropdownMenuItem 
+    onClick={() => window.open(profileData.avatar, '_blank')}
+    disabled={!profileData.avatar}
+    className="hover:bg-gray-100 focus:bg-gray-100"
+  >
+    <Eye className="w-4 h-4 mr-2" />
+    View Profile Photo
+  </DropdownMenuItem>
+  {profileData.avatar && (
+    <DropdownMenuItem 
+      onClick={removeProfilePhoto} 
+      className="text-red-500 hover:bg-gray-100 focus:bg-gray-100"
+      disabled={isUploadingProfile}
+    >
+      <Trash2 className="w-4 h-4 mr-2" />
+      Delete Photo
+    </DropdownMenuItem>
+  )}
+</DropdownMenuContent>
               </DropdownMenu>
               
               <input
