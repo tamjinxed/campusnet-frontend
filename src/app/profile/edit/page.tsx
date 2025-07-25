@@ -6,11 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/ca
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
+import { Separator } from '@/app/components/ui/separator';
 import { TopHeader } from '@/app/components/layout/topheader';
-import { Edit, Plus, GraduationCap, Award, Upload, User, X, Eye, Check } from 'lucide-react';
+import { Edit, Plus, GraduationCap, Award, Upload, User, X, Eye, Check, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Textarea } from '@/app/components/ui/textarea';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/app/components/ui/dropdown-menu';
 
 export default function EditProfilePage() {
   const coverPhotoRef = useRef<HTMLInputElement>(null);
@@ -24,14 +31,16 @@ export default function EditProfilePage() {
     location: "San Francisco, CA",
     university: "Stanford University",
     year: "Senior",
-    major: "Computer Science"
+    major: "Computer Science",
+    connections: 342,
+    posts: 28,
+    joinedDate: "March 2022"
   });
 
   const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [showCoverOptions, setShowCoverOptions] = useState(false);
-  const [showProfileOptions, setShowProfileOptions] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
 
   const [education, setEducation] = useState([
     {
@@ -59,14 +68,22 @@ export default function EditProfilePage() {
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setCoverPhotoFile(e.target.files[0]);
-      setShowCoverOptions(false);
+      setIsUploadingCover(true);
+      setTimeout(() => {
+        setProfileData({...profileData, coverPhoto: URL.createObjectURL(e.target.files![0])});
+        setIsUploadingCover(false);
+      }, 1000);
     }
   };
 
   const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setProfilePhotoFile(e.target.files[0]);
-      setShowProfileOptions(false);
+      setIsUploadingProfile(true);
+      setTimeout(() => {
+        setProfileData({...profileData, avatar: URL.createObjectURL(e.target.files![0])});
+        setIsUploadingProfile(false);
+      }, 1000);
     }
   };
 
@@ -80,18 +97,6 @@ export default function EditProfilePage() {
     setProfileData({...profileData, avatar: ""});
   };
 
-  const handleUpload = (type: 'cover' | 'profile') => {
-    setIsUploading(true);
-    setTimeout(() => {
-      setIsUploading(false);
-      if (type === 'cover' && coverPhotoFile) {
-        setProfileData({...profileData, coverPhoto: URL.createObjectURL(coverPhotoFile)});
-      } else if (type === 'profile' && profilePhotoFile) {
-        setProfileData({...profileData, avatar: URL.createObjectURL(profilePhotoFile)});
-      }
-    }, 1500);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
@@ -103,14 +108,10 @@ export default function EditProfilePage() {
       
       <div className="container mx-auto px-4 py-6">
         <form onSubmit={handleSubmit}>
-          {/* Cover + Profile Photo Section */}
+          {/* Cover + Profile Photo Section - Consistent with Profile Page */}
           <div className="relative w-full mb-16">
             {/* Cover Photo */}
-            <div 
-              className="h-48 md:h-64 w-full rounded-t-lg overflow-hidden bg-gray-200 relative group"
-              onMouseEnter={() => setShowCoverOptions(true)}
-              onMouseLeave={() => !isUploading && setShowCoverOptions(false)}
-            >
+            <div className="h-48 w-full rounded-t-lg overflow-hidden bg-gray-200 relative group">
               <input
                 type="file"
                 ref={coverPhotoRef}
@@ -125,124 +126,120 @@ export default function EditProfilePage() {
                   alt="Cover"
                   fill
                   className="object-cover"
+                  priority
                 />
               ) : (
-                <div className="h-full w-full flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500">
-                  <span className="text-white/80">No cover photo</span>
+                <div className="h-full w-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+                  <span className="text-gray-500">No cover photo</span>
                 </div>
               )}
 
-              {(showCoverOptions || isUploading) && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center transition-all">
-                  {isUploading ? (
-                    <div className="text-white text-center p-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-                      <p>Uploading...</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="bg-white/90 hover:bg-white text-gray-800"
-                        onClick={() => coverPhotoRef.current?.click()}
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        {profileData.coverPhoto ? "Change Cover" : "Add Cover"}
-                      </Button>
-                      {profileData.coverPhoto && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="bg-white/90 hover:bg-white text-gray-800"
-                          onClick={removeCoverPhoto}
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          Remove Cover
-                        </Button>
-                      )}
-                    </div>
+              {/* Cover Photo Edit Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="bg-white/90 hover:bg-white text-gray-800"
+                    onClick={() => coverPhotoRef.current?.click()}
+                    disabled={isUploadingCover}
+                  >
+                    {isUploadingCover ? 'Uploading...' : 'Upload Cover'}
+                  </Button>
+                  {profileData.coverPhoto && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="bg-white/90 hover:bg-white text-gray-800"
+                      onClick={removeCoverPhoto}
+                      disabled={isUploadingCover}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Remove
+                    </Button>
                   )}
                 </div>
-              )}
+              </div>
+
+              {/* Semi-transparent Edit Cover Button (always visible) */}
+              <div className="absolute top-4 right-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+                  onClick={() => coverPhotoRef.current?.click()}
+                  disabled={isUploadingCover}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Cover
+                </Button>
+              </div>
             </div>
 
-            {/* Profile Photo */}
-            <div className="relative">
-              <div 
-                className="absolute -bottom-12 left-6 w-24 h-24 rounded-full border-4 border-white bg-gray-100 overflow-hidden cursor-pointer shadow-md z-10 group"
-                onMouseEnter={() => setShowProfileOptions(true)}
-                onMouseLeave={() => !isUploading && setShowProfileOptions(false)}
-              >
-                <input
-                  type="file"
-                  ref={profilePhotoRef}
-                  onChange={handleProfilePhotoUpload}
-                  className="hidden"
-                  accept="image/*"
-                />
-                
-                {profileData.avatar ? (
-                  <Image
-                    src={profilePhotoFile ? URL.createObjectURL(profilePhotoFile) : profileData.avatar}
-                    alt="Profile"
-                    width={96}
-                    height={96}
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <User className="w-8 h-8 text-gray-500" />
-                  </div>
-                )}
-
-                {(showProfileOptions || isUploading) && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center transition-all">
-                    {isUploading ? (
-                      <div className="text-white text-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>
+            {/* Profile Photo - Consistent with Profile Page */}
+            <div className="absolute -bottom-16 left-6">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="relative w-32 h-32 rounded-full border-4 border-white bg-gray-100 overflow-hidden cursor-pointer shadow-md group">
+                    {isUploadingProfile ? (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <span className="text-gray-500">Uploading...</span>
                       </div>
+                    ) : profileData.avatar ? (
+                      <Image
+                        src={profilePhotoFile ? URL.createObjectURL(profilePhotoFile) : profileData.avatar}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                        priority
+                      />
                     ) : (
-                      <div className="flex flex-col items-center space-y-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="bg-white/90 hover:bg-white text-gray-800 h-8"
-                          onClick={() => profilePhotoRef.current?.click()}
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Edit
-                        </Button>
-                        {profileData.avatar && (
-                          <>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="bg-white/90 hover:bg-white text-gray-800 h-8"
-                              onClick={() => window.open(profileData.avatar, '_blank')}
-                            >
-                              <Eye className="w-3 h-3 mr-1" />
-                              View
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="bg-white/90 hover:bg-white text-gray-800 h-8"
-                              onClick={removeProfilePhoto}
-                            >
-                              <X className="w-3 h-3 mr-1" />
-                              Remove
-                            </Button>
-                          </>
-                        )}
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
+                    
+                    {/* Profile Photo Edit Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                      <Edit className="w-6 h-6 text-white" />
+                    </div>
                   </div>
-                )}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={() => profilePhotoRef.current?.click()}
+                    disabled={isUploadingProfile}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile Photo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open(profileData.avatar, '_blank')}
+                    disabled={!profileData.avatar}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Profile Photo
+                  </DropdownMenuItem>
+                  {profileData.avatar && (
+                    <DropdownMenuItem 
+                      onClick={removeProfilePhoto} 
+                      className="text-red-500"
+                      disabled={isUploadingProfile}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Photo
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <input
+                type="file"
+                ref={profilePhotoRef}
+                onChange={handleProfilePhotoUpload}
+                className="hidden"
+                accept="image/*"
+              />
             </div>
           </div>
 
@@ -420,10 +417,11 @@ export default function EditProfilePage() {
                   <div key={interest.id} className="group relative">
                     <div className="relative aspect-video overflow-hidden rounded-lg">
                       {interest.image ? (
-                        <img
+                        <Image
                           src={interest.image}
                           alt={interest.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
