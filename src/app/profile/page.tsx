@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef , useEffect } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
@@ -211,7 +211,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <ProfileActivity activities={activities} profileData={profileData} />
+            <ProfileActivity activities={activities as any} profileData={profileData} />
           </div>
 
           {/* Right Column */}
