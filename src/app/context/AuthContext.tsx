@@ -15,7 +15,6 @@ import api from "../lib/axios";
 import { setAccessToken, clearToken, hasToken } from "../lib/token.service";
 import { toast } from "react-hot-toast";
 
-// Interfaces
 interface LoginCredentials {
     email: string;
     password: string;
@@ -35,11 +34,10 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<object | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isInitialized, setIsInitialized] = useState(false); // Tracks initial user load
+    const [isInitialized, setIsInitialized] = useState(false);
     const router = useRouter();
 
     const fetchUser = useCallback(async () => {
-        // Only fetch user if a token exists
         if (!hasToken()) {
             setUser(null);
             setIsInitialized(true);
@@ -51,18 +49,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const { data } = await api.get("/users/me");
             setUser(data.data.user);
-        } catch (error) {
-            // Error is handled by the interceptor, which will clear the token and redirect if needed.
-            // Here, we just ensure the local user state is cleared.
-            setUser(null);
-            console.error("Failed to fetch user:", error);
+        } catch (error: any) {
+            if (error.response?.status !== 401) {
+                setUser(null);
+            }
         } finally {
             setIsLoading(false);
             setIsInitialized(true);
         }
     }, []);
 
-    // Initial load: check for user
     useEffect(() => {
         fetchUser();
     }, [fetchUser]);
@@ -71,19 +67,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         try {
             const { data } = await api.post("/auth/login", credentials);
-            const { accessToken, user: userData } = data.data;
+            const { accessToken, user: userData, expiresIn } = data.data;
 
-            setAccessToken(accessToken);
+            const tokenExpirySeconds = expiresIn || 900;
+            setAccessToken(accessToken, tokenExpirySeconds);
             setUser(userData);
 
             toast.success("Login successful!");
-            setTimeout(() => {
-                router.push("/dashboard");
-            }, 3000);
+            router.push("/dashboard");
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials.";
             toast.error(errorMessage);
-            throw err; // Re-throw for form handling if needed
+            throw err;
         } finally {
             setIsLoading(false);
         }

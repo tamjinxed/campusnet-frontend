@@ -5,6 +5,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { hasToken } from "../lib/token.service";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -15,18 +16,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const router = useRouter();
 
     useEffect(() => {
-        // Wait until the initial authentication check is complete
         if (!isInitialized) {
             return;
         }
 
-        // If auth check is done and there's no user, redirect to login
-        if (!user) {
+        if (!user && !hasToken()) {
             router.push("/login");
         }
     }, [user, isInitialized, router]);
 
-    // While checking auth, show a loader
     if (!isInitialized) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -36,9 +34,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         );
     }
 
-    // If there is a user, render the children
-    // The redirect in useEffect will handle the case where user is null
-    return user ? <>{children}</> : null;
+    return (user || hasToken()) ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;
