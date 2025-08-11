@@ -8,6 +8,7 @@ import {useEffect, useState} from "react";
 import {useAuth} from "@/app/context/AuthContext";
 import { useRouter } from 'next/navigation';
 import {uuidToNumericString} from "@/app/utils/utils";
+import Link from "next/link";
 
 const RightSidebar = () => {
   const {user} = useAuth();
@@ -79,21 +80,27 @@ const RightSidebar = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {suggestedGroups.map((group, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={group.logo} />
-                          <AvatarFallback className="bg-purple-100 text-purple-600">G</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4 className="font-medium text-sm">{group.name}</h4>
-                          <p className="text-xs text-gray-600">{group.memberCount} {group.memberCount === 1 ? 'Member' : `Members`}</p>
+                    <Link
+                        key={index}
+                        href={`/groups/${encodeURIComponent(uuidToNumericString(group.id))}`}
+                        className="block"
+                    >
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={group.logo} />
+                            <AvatarFallback className="bg-purple-100 text-purple-600">G</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-medium text-sm">{group.name}</h4>
+                            <p className="text-xs text-gray-600">{group.memberCount} {group.memberCount === 1 ? 'Member' : `Members`}</p>
+                          </div>
                         </div>
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white px-4">
+                          Join
+                        </Button>
                       </div>
-                      <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white px-4">
-                        Join
-                      </Button>
-                    </div>
+                    </Link>
                 ))}
               </CardContent>
             </Card>

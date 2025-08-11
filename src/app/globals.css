@@ -200,7 +200,6 @@ letter-spacing: 0%;
     opacity: 1;
   }
 }
-
 .animate-pulse-gentle {
   animation: pulse-gentle 3s ease-in-out infinite;
 }

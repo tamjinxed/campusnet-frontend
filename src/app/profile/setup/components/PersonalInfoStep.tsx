@@ -60,14 +60,6 @@ export default function PersonalInfoStep({
               <RadioGroupItem value="female" id="female" />
               <Label htmlFor="female">Female</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="other" id="other" />
-              <Label htmlFor="other">Other</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="prefer-not-to-say" id="prefer-not-to-say" />
-              <Label htmlFor="prefer-not-to-say">Prefer not to say</Label>
-            </div>
           </RadioGroup>
         </div>
 

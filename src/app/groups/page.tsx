@@ -135,7 +135,7 @@ export default function GroupsPage() {
               {suggestedGroups?.map((group, index) => (
                 <Link
                   key={index}
-                  href={`/groups/${encodeURIComponent(group.name.toLowerCase().replace(/\s+/g, "-"))}`}
+                  href={`/groups/${encodeURIComponent(uuidToNumericString(group.id))}`}
                   className="block"
                 >
                   <Card className="hover:ring-2 hover:ring-purple-600 transition">
