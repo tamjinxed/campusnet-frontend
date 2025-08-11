@@ -596,6 +596,7 @@ const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
                                         </div>
 
                                         {/* Group Actions Dropdown */}
+                                        {isAdmin && (
                                         <div className="absolute top-4 right-4">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -604,7 +605,7 @@ const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg py-1">
-                                                    {isAdmin && (
+
                                                         <>
                                                             <DropdownMenuItem className="hover:bg-white/40 cursor-pointer"  onClick={() => setShowEditGroupModal(true)}>
                                                                 <Edit className="w-4 h-4 mr-2" />
@@ -619,10 +620,10 @@ const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
                                                                 Pending Posts
                                                             </DropdownMenuItem>
                                                         </>
-                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
+                                        )}
                                     </div>
 
                                     <div className="p-4 md:p-6">
