@@ -387,7 +387,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-48">
+                                <DropdownMenuContent align="start" className="w-48 bg-white">
                                     <DropdownMenuItem onClick={() => profilePhotoRef.current?.click()} disabled={isUploadingProfile}>
                                         <Upload className="w-4 h-4 mr-2" />
                                         Upload Photo
