@@ -142,7 +142,7 @@ const PendingPosts = ({ params }: { params: Promise<{ groupId: string }> }) => {
         <div className="min-h-screen bg-muted">
             <TopHeader />
 
-            <div className="flex">
+            <div className="max-w-7xl mx-auto flex gap-6 p-4 md:p-6">
                 <div className="hidden md:block">
                     <LeftSidebar />
                 </div>

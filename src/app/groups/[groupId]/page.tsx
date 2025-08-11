@@ -535,9 +535,10 @@ const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
     }
 
     return (
-        <div className="min-h-screen bg-muted flex flex-col">
+        <div className="min-h-screen bg-muted">
             <TopHeader />
 
+            <div className="max-w-7xl mx-auto flex gap-6 p-4 md:p-6">
             <div className="flex flex-1">
                 <div className="hidden md:block">
                     <LeftSidebar />
@@ -1266,6 +1267,7 @@ const SingleGroup = ({ params }: { params: Promise<{ groupId: string }> }) => {
                 open={isCreatePostOpen}
                 onOpenChange={setIsCreatePostOpen}
             />
+        </div>
         </div>
     )
 }

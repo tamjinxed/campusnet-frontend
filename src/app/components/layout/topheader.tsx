@@ -183,6 +183,12 @@ export function TopHeader() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 mt-2 z-50 bg-white" sideOffset={8}>
+                    <DropdownMenuItem asChild className="hover:bg-gray-50">
+                        <Link href="/mycommunity" className="flex items-center">
+                            <Users className="w-4 h-4 mr-2" />
+                            <span>My Community</span>
+                        </Link>
+                    </DropdownMenuItem>
                   <DropdownMenuItem asChild className="hover:bg-gray-50">
                     <Link href="/profile" className="flex items-center">
                       <User className="w-4 h-4 mr-2" />
